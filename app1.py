@@ -19,7 +19,8 @@ from langchain.schema import SystemMessage, HumanMessage
 from flask_mail import Mail, Message
 from flask_dance.contrib.google import make_google_blueprint, google
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+if os.name == "nt":
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 env_path = os.path.join(BASE_DIR, ".env")
@@ -1114,7 +1115,8 @@ def share_chat():
         )
         db.session.add(shared)
         db.session.commit()
-        share_url = f"http://127.0.0.1:5000/shared/{share_id}"
+        # share_url = f"http://127.0.0.1:5000/shared/{share_id}"
+        share_url = request.host_url + "shared/" + share_id
 
     # ✅ Reload history for display
     chat_history = ChatHistory.query.filter_by(

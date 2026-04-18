@@ -1,11 +1,20 @@
-flask
+Flask
 Flask-Login
 Flask-SQLAlchemy
 Flask-Dance
+Flask-Bcrypt
+Flask-Mail
+Flask-Session
 Werkzeug
 gunicorn
 python-dotenv
 markdown
+Pillow
+pytesseract
+PyMuPDF
+PyPDF2
+python-docx
+beautifulsoup4
 
 langchain
 langchain-community
@@ -13,8 +22,7 @@ langchain-groq
 langchain-openai
 langchain-google-genai
 
-PyPDF2
 faiss-cpu
+sentence-transformers
 tiktoken
-Pillow
 
