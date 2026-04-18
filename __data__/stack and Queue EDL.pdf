@@ -1,0 +1,1174 @@
+UNIT 2:-
+STACKS & QUEUES
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+,
+WHAT IS STACK?
+A stack is called a Last-In-First-Out (LIFO) collection of items. 
+This means that the last item added (pushed) is the first item 
+removed (popped).
+A stack is a sequence of items in which elements are accessible 
+only from one end, called the top.
+Operations:
+• PUSH – Insert an item into the stack  
+• POP   – Remove an item from the stack
+Example 
+of Stack-
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+A stack is a linear data structure where elements can be added or 
+removed from only one end, called the top. When you remove elements, 
+they come out in the reverse order of how they were added.
+A stack works on the LIFO (Last-In, First-Out) principle. This means the element 
+added last is removed first.
+There are two main operations in a stack:
+PUSH: Used to add an element to the top of the stack.
+POP: Used to remove an element from the top of the stack.
+STACKS AS ADT :
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+TYPES OF STACK
+Fixed (Static) Size Stack   
+A fixed size stack has a predefined capacity.
+Once it becomes full, no more elements can be added (this causes overflow).
+If the stack is empty and we try to remove an element, it causes underflow.
+It is usually implemented using a normal array with fixed size.
+Example: Creating a stack of size 10 using an array.
+Dynamic Size Stack
+A dynamic size stack can increase and decrease in size as needed.
+If the stack becomes full, it automatically increases its capacity.
+When elements are removed, memory can also reduce automatically.
+It can be implemented using:
+-> Linked List → size changes easily.
+-> Dynamic Array (like vector in C++ or ArrayList in Java) → resizes automatically.
+Example: Stack created using linked list or dynamic array.    
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Operations that can be performed 
+on STACK:
+PUSH – Insert an element at the top of 
+the stack
+POP – Remove the top element from the 
+stack
+PEEK (TOP) – View the top element 
+without removing it
+isEmpty – Check if the stack is empty
+isFull – Check if the stack is full
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+The PUSH( ) operation is used to add an 
+element to the top of the stack.
+It follows the LIFO (Last-In, First-Out) rule, 
+which means the element added last will be 
+removed first.
+PUSH( ) is a basic and important operation in a stack. 
+When you use PUSH, the new element is placed on 
+the top position of the stack.
+When we try to insert (PUSH) an element into a 
+stack that is already full, it is called Stack 
+Overflow.
+PUSH( ) OPERATION
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+• Used to insert or add an element or 
+an item onto top of the stack
+• Putting a new element onto stack called push operation
+• A series of steps involved in push operation
+• Step 1 – Checks if the stack is full.
+• Step 2 – If the stack is full, produces an error and exit.
+• Step 3 – If the stack is not full, increments top to 
+point next empty space.
+• Step 4 – Adds data element to the stack location,
+where top is pointing.
+• Step 5 – Returns success.
+PUSH Operation
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Algorithm: PUSH Operation in Stack
+Time Complexity:    O(1)                 Space Complexity: O(n)
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+#include <stdio.h>
+#define MAX 100
+int stack[MAX];
+int top = -1;
+// PUSH function
+void push(int item)
+{
+if(top == MAX - 1)
+{
+printf("STACK OVERFLOW\n");
+}
+else
+{
+top = top + 1;
+stack[top] = item;
+printf("%d pushed into stack\n", item);
+}
+}
+int main()
+{
+push(10);
+push(20);
+return 0;
+}
+Code for PUSH
+Operation in 
+Stack
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+POP( ) OPERATION
+POP( ) operation is used to remove an element 
+from the stack. The element is always removed 
+from the top of the stack because stack follows 
+the LIFO (Last-In-First-Out) principle. 
+Before removing, the stack is checked to see if it 
+is empty. If the stack is empty, it shows "STACK 
+UNDERFLOW". Otherwise, the top element is 
+removed and the value of top is decreased by 
+one. It is one of the basic operations performed 
+in a stack.
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+• Used to delete or remove an element or an item
+from top of the stack
+• Removing an element from stack called
+pop operation
+• A series of steps involved in pop operation
+• Step 1 – checks if the stack is empty.
+• Step 2 – if the stack is empty, produces an error and exit.
+• Step 3 – if the stack is not empty, accesses 
+the data element at which top is pointing.
+• Step 4 – decreases the value of top by 1.
+• Step 5 – returns success.
+POP operation
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Algorithm: POP Operation in Stack
+Time Complexity:    O(1)                 Space Complexity: O(n)
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Code for POP
+Operation in 
+Stack
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+ALGORITHM of DISPLAY & PEEK in STACK:
+DISPLAY
+PEEK
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Stack OVERFLOW
+Stack Overflow
+in Stack:-
+Stack Overflow occurs when 
+we try to insert (PUSH) an 
+element into a stack that is 
+already full.
+A stack has a fixed 
+maximum size. When the 
+value of top = max − 1, the 
+stack is full. If we try to 
+PUSH another element, 
+there is no space available, 
+so STACK OVERFLOW
+happens.
+ALGORITHM:
+-
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Stack UNDERFLOW
+Stack underflow in
+Stack:-
+ALGORITHM:-
+►Stack Underflow occurs when we 
+try to remove (POP) an element from 
+a stack that is already empty.
+►A stack becomes empty when the 
+value of top = −1. If we try to POP an 
+element, there is no element 
+available, so STACK UNDERFLOW 
+occurs.
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Implementation of stack in 
+data structure:-
+A stack can be implemented 
+using two main data structures:
+• Using Arrays
+• Using Linked Lists
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Implementation of Stack using Array
+•When we perform PUSH, the top increases 
+and the element is added.
+•When we perform POP, the top element is 
+removed and top decreases.
+•The size is fixed, so if the array becomes full, 
+it causes Stack Overflow.
+•This method is simple, fast, and easy to 
+implement.
+•Array stack behaves like a fixed-size 
+container.
+In array implementation, stack elements are stored in a fixed-size 
+array. A variable called top is used to track the last inserted element.
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Implementation of Stack using Linked lists
+•When we perform PUSH, a new node is created 
+and added at the top.
+•When we perform POP, the top node is removed 
+and top moves to the next node.
+•The size is not fixed, so the stack can grow 
+dynamically.
+•This method is memory efficient and flexible.
+•Linked list stack behaves like a chain that can grow 
+endlessly, limited only by system memory.
+In linked list implementation, stack elements are stored in nodes 
+connected by links. The top points to the first node.
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Application of stack
+3. Memory Management
+Stack is used to store temporary data and local variables of functions. When the 
+function ends, the memory is automatically removed from the stack.
+4. Function Calls (Call Stack)
+Stack is used to manage function calls. When a function is called, its data is pushed    
+into the   stack. When the function finishes, it is popped from the stack. This follows 
+LIFO principle.
+2. Expression Evaluation and Conversion
+Stack is used to convert and evaluate expressions like infix, postfix, and prefix. 
+It helps in solving expressions correctly using operator precedence.
+1.Recursion
+Stack is used in recursion to store function calls and their data. This is called 
+the call stack.
+When a recursive function is called, its information is pushed into the stack. 
+When the function finishes, it is popped from the stack.
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Evaluating Arithmetic Expression using Stack
+An  arithmetic expression is a combination of operands
+(A, B, X, Y) and operators (+, −, ×, ÷) used to perform calculations.
+In computer science, stack is used to evaluate arithmetic 
+expressions.
+Example:  A + B
+Notations-
+Infix, Postfix and Prefix notations are three different but equivalent 
+ways of writing expressions.
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+2.Prefix expression (Polish notation):
+Operator is before operands.
+An expression is called the prefix expression.  if the operator appears before the 
+operands. Simply of the form (operator operand1 operand2).
+Example: +AB
+3) Postfix expression (Reverse Polish notation):
+Operator is after operands. 
+An expression is called the postfix expression if the operator appears after the 
+operands. Simply of the form (operand1 operand2 operator).
+Example: AB+
+1) Infix expression:
+Operator is between operands. 
+An expression is called the infix expression if the operator appears 
+between the operands. Simply of the form (operand1 operator operand2).
+Example: A+B
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+•Infix expressions are easy for humans to read, 
+but difficult for computers to evaluate.
+•Prefix and Postfix expressions are easy for 
+computers because they do not need rules of 
+precedence and associativity.
+•Therefore, computers use prefix or postfix 
+expressions for faster and easier evaluation.
+Why do we need 3 
+different expressions?
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Any expression can be written in three forms: 
+Infix, Prefix, and Postfix.
+We can convert Infix expression into Postfix 
+expression using stack.
+Steps:
+•Find all the operators in the infix expression.
+•Arrange operators according to their 
+precedence (priority).
+•Convert the expression step by step into 
+postfix form.
+Conversion of Infix to Postfix using Stack 
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Consider the following Infix Expression to be converted 
+into Postfix Expression...
+D = A + B * C
+Step 1: The operators in the given Infix Expression: =, +, *
+Step 2: The order of operators according to their 
+precedence: *, +, =
+Step 3: Now, convert the first operator * → D = A + B C *
+Step 4: Convert the next operator + → D = A B C * +
+Step 5: Convert the next operator = → D A B C * + =
+Finally, given Infix Expression is converted into Postfix 
+Expression as follows:
+D A B C * + =
+Example:
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Final Postfix Expression:
+D A B C * + =
+Step
+Symbol
+Stack
+Postfix
+1
+D
+—
+D
+2
+=
+=
+D
+3
+A
+=
+D A
+4
++
+= +
+D A
+5
+B
+= +
+D A B
+6
+*
+= + *
+D A B
+7
+C
+= + *
+D A B C
+8
+End
+—
+D A B C * + =
+Stack Table for Infix to Postfix Conversion
+Infix Expression: D = A + B * C
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Convert the following infix expression into postfix expression using stack 
+and show the stack table:
+Infix Expression:    (A + B * C - (D / E ^ F) * G) * H
+1.Read the expression from left to right.
+2.If operand (A, B, C) add to output.
+3.If ( push into stack.
+4.If operator (+, −, *, /, ^) pop higher precedence operators 
+from stack, then push operator.
+5.If ) pop operators until ( is found.
+6.Repeat until expression ends.
+7.Pop all remaining operators from stack to output.
+Procedure:-
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+S.No
+Symbol Scanned
+Stack
+Output
+(i)
+(
+(
+(ii)
+A
+(
+A
+(iii)
++
+(+
+A
+(iv)
+(
+(+(
+A
+(v)
+B
+(+(
+AB
+(vi)
+*
+(+(*
+AB
+(vii)
+C
+(+(*
+ABC
+(viii)
+)
+(+
+ABC*
+(ix)
+−
+(+−
+ABC*
+(x)
+(
+(+−(
+ABC*
+(xi)
+D
+(+−(
+ABC*D
+(xii)
+/
+(+−(/
+ABC*D
+(xiii)
+E
+(+−(/
+ABC*DE
+(xiv)
+^
+(+−(/^
+ABC*DE
+(xv)
+F
+(+−(/^
+ABC*DEF
+(xvi)
+)
+(+−
+ABC*DEF^/
+(xvii)
+*
+(+−*
+ABC*DEF^/
+(xviii)
+G
+(+−*
+ABC*DEF^/G
+(xix)
+)
+(+
+ABCDEF^/G-
+(xx)
+*
+(+*
+ABCDEF^/G-
+(xxi)
+H
+(+*
+ABCDEF^/G-H
+(xxii)
+)
+Empty
+ABCDEF^/G-H*+
+Final
+Postfix
+Expression
+𝐴𝐵𝐶∗𝐷𝐸𝐹/𝐺∗−𝐻∗+
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+In postfix expression, operator 
+comes after operands. It is 
+evaluated using a stack. We scan 
+the expression from left to right. 
+When an operand is found, it is 
+pushed into the stack. When an 
+operator is found, two operands 
+are popped from the stack, the 
+operation is performed, and the 
+result is pushed back into the 
+stack. The final answer will be on 
+the top of the stack.
+Evaluation of Postfix Expression 
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Example Evaluate the postfix expression:
+9 8 + 3 * 2 /
+Step
+Symbol
+Action
+Stack
+1
+9
+Push
+9
+2
+8
+Push
+9, 8
+3
++
+9 + 8 = 17 → Push
+17
+4
+3
+Push
+17, 3
+5
+*
+17 × 3 = 51 → Push
+51
+6
+2
+Push
+51, 2
+7
+/
+51 ÷ 2 = 25 → Push
+25
+Final Result = 25
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+1.Simple and easy to use
+Stack operations like push and pop are simple to implement.
+2. Fast operations
+Insertion and deletion take O(1) time (constant time).
+3. Useful in recursion
+Stack manages function calls using the call stack.
+4. Helps in expression evaluation
+Used for infix, postfix, and prefix conversion and evaluation
+.
+5. Used in undo/redo operations
+Applications like MS Word and browsers use stack.
+Advantages of Stack
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+1.Limited access
+You can access only the top element, not middle or bottom.
+2. Fixed size problem (in array stack)
+Stack overflow occurs if stack becomes full.
+3. Memory wastage
+If stack is not fully used, memory remains unused.
+4. Stack overflow risk
+Too many elements or recursive calls can crash program.
+5. Not suitable for all applications
+If random access is needed, stack is not useful.
+Disadvantages of Stack
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+• Queue is based on FIFO (First-in-First-out) principle.
+• Unlike stacks, a queue is open at both it ends.
+• Two operations are performed
+• Enqueue or insertion – insert an element
+• Dequeue or deletion – delete an element
+• To maintain queue two pointers are used
+• Front
+• Rear
+Introduction to Queue
+• It is an abstract data type (ADT)
+data structure like stack.
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+• Adding an object to a queue is called
+"insertion or enqueue". 
+• It is always added at the end of the queue,
+which is called the "rear."
+• Removing an object from a queue is called 
+"deletion or dequeue".
+• It is always removed from the front of the 
+• queue, which is called the "front.“
+• Real life Example:-
+Queue
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Operations in Queue
+1. Enqueue (Insertion):
+Adds an element at the rear (end) of the queue.
+2. Dequeue (Deletion):
+Removes an element from the front of the queue.
+3. Peek (Front):Shows the front element without 
+removing it.
+4. Rear: Get the last item from queue.
+5. isEmpty(): Checks whether the queue is empty or not.
+6. isFull(): Checks whether the queue is full or not.
+Time Complexity: Queue Time complexity of all operations like enqueue(), 
+dequeue(), isFull(), isEmpty(), front() and rear() is O(1). There is no loop in any 
+of the operations. 
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+•Used to insert element at the end of the queue i.e. rear
+•This operation is used to insert an element in a queue
+at rear end.
+•Following steps are involved to insert an element
+•Step 1 – Check if the queue is full.
+•Step 2 – If the queue is full, produce overflow error and 
+exit.
+•Step 3 – If the queue is not full, increment rear pointer to
+point the next empty space.
+•Step 4 – Add data element to the queue location, 
+where the rear is pointing.
+•Step 5 – return success.
+Enqueue operation
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Enqueue operation Algorithm
+&  Representation:-
+Algorithm
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+•Used to delete element at the start of the queue i.e. 
+front
+•This operation is used to remove an element from a 
+queue at front end.
+•Following steps are involved to delete an element
+• Step 1 – Check if the queue is empty.
+• Step 2 – If the queue is empty, produce underflow        
+error and exit.
+• Step 3 – If the queue is not empty, access the data 
+where front is pointing.
+• Step 4 – Increment front pointer to point to the next 
+available data element.
+• Step 5 – Return success.
+Dequeue operation
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Dequeue operation Algorithm &
+Representation:-
+Algorithm
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Queue Code in C (Enqueue and Dequeue)
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+1. Simple Queue (Linear Queue): Insertion at 
+rear and deletion from front.
+2. Circular Queue: Last position connects to first, 
+forming a circle.
+3. Priority Queue: Elements are removed based 
+on priority, not order.
+4. Deque (Double Ended Queue): Insertion and 
+deletion allowed at both ends.
+Types of Queue
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+1. Simple Queue (Linear Queue)
+•It is the basic type of queue.
+•Insertion is done at the rear end.
+•Deletion is done from the front end.
+•It follows FIFO (First In First Out) principle.
+•It is easy to implement using array or linked list.
+•Disadvantage: Empty spaces at front cannot be reused, 
+causing memory wastage.
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+2. Circular Queue
+•In circular queue, the last 
+position is connected to the 
+first position.
+•It forms a circular structure.
+•It allows reuse of empty 
+spaces.
+•It avoids memory wastage.
+•Used in CPU scheduling and 
+buffering.
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Insertion means adding an 
+element at the rear of the 
+circular queue.
+Steps:
+•Check if the queue is full.
+•If full, show Queue Overflow.
+•If queue is empty, set front = 
+rear = 0.
+•Otherwise, move rear using 
+circular condition:
+rear = (rear + 1) % MAX
+•Insert the element at 
+queue[rear].
+Insertion in Circular Queue (Enqueue)
+Step 1: Start
+Step 2: Check if (front == 0 AND rear 
+== MAX-1) OR (rear + 1 == front)
+Step 3: If true, print "Queue Overflow" 
+and Stop
+Step 4: If front == -1, set front = 0 and 
+rear = 0
+Step 5: Else set rear = (rear + 1) % MAX
+Step 6: Insert item at queue[rear]
+Step 7: Stop
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Deletion means removing an 
+element from the front of the circular 
+queue.
+Steps:
+•Check if the queue is empty.
+•If empty, show Queue Underflow.
+•Remove the element from 
+queue[front].
+•If only one element was present, set 
+front = rear = -1.
+•Otherwise, move front using circular 
+condition:
+front = (front + 1) % MAX
+Deletion in Circular Queue (Dequeue)
+Step 1: Start
+Step 2: Check if front == -1
+Step 3: If true, print "Queue Underflow" 
+and Stop
+Step 4: Set item = queue[front]
+Step 5: If front == rear, set front = rear = 
+-1
+Step 6: Else set front = (front + 1) % 
+MAX
+Step 7: Return item
+Step 8: Stop
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+4. Priority Queue
+•Each element has a priority value.
+•Element with higher priority is deleted 
+first.
+•FIFO is not strictly followed.
+•Used in operating systems and 
+scheduling systems.
+•Undo and Redo: Used in text editors.
+•Browser History: Used to move forward and 
+backward.
+•Palindrome Checking: Used to compare 
+characters from both ends.
+•CPU Scheduling: Used to manage processes.
+•Sliding Window Algorithms: Used to find max or 
+min values.
+Applications of Deque 
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Deque (Double Ended Queue)
+• Insertion and deletion can be   done from both    
+front and rear.
+• It is more flexible than simple queue.
+• Two types:
+• Input restricted deque
+• Output restricted deque
+• Used in advanced applications like scheduling  
+and memory management. 
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+•insertFront(): Adds an item at the front of the deque.
+•insertLast(): Adds an item at the rear of the deque.
+•deleteFront(): Removes an item from the front of the deque.
+•deleteLast(): Removes an item from the rear of the deque.
+• Other operations:
+•getFront(): Shows the front item.
+•getRear(): Shows the last item.
+•isEmpty(): Checks if the deque is empty.
+•isFull(): Checks if the deque is full.
+• Deque allows insertion and deletion from both front and 
+rear.
+Operations on Deque 
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Queue can be implemented in two main 
+ways:
+1. Using Array
+Queue is stored in an array Uses front and 
+rear indexes.
+Size is fixed.
+2. Using Linked List
+Queue is stored using nodes Uses front and 
+rear pointers.
+Size is dynamic.
+Ways to Implement Queue
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Queue Implementation using 
+Linked List in C 
+In linked list queue, each element 
+is stored in a node. Each node 
+has:
+data → stores value
+next → points to next node
+Two pointers are used:
+front → points to first element
+rear → points to last element
+Insertion happens at rear, 
+deletion happens at front.
+Queue Implementation using Linked List 
+(with Algorithms)
+Structure Declaration
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+INSERTION Operation (Enqueue Algorithm)
+Insertion means 
+adding an element 
+at the rear end.
+Insertion always happens at
+the rear.
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Deletion Operation (Dequeue Algorithm)
+Deletion means removing 
+an element from the front 
+end.
+Deletion always happens
+at the front.
+Advantages
+•Queue size can grow dynamically
+•No memory wastage
+•No overflow problem until memory 
+is full
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+1. CPU Scheduling:
+Queue is used to execute 
+programs in the order they  arrive.
+2. Printer Queue:
+Queue is used to print 
+documents in the order they 
+are given.
+3. Keyboard Buffer:
+Queue stores keys 
+pressed and processes them in 
+order.
+4. Breadth First Search (BFS):
+Queue is used to visit graph 
+nodes in sequence.
+5.Call Center System:
+Queue is used to answer 
+calls in the order received.
+6. Data Transfer (Network):
+Queue is used to send data 
+in the correct order.
+Applications of Queue
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Feature
+Stack
+Queue
+Principle
+Follows LIFO (Last In First 
+Out)
+Follows FIFO (First In First 
+Out)
+Insertion
+Element added at top
+Element added at rear
+Deletion
+Element removed from 
+top
+Element removed from 
+front
+Ends used
+Only one end (top) is 
+used
+Two ends (front and rear) 
+are used
+Operations
+push, pop, peek
+enqueue, dequeue,peek
+Example
+Stack of plates
+Line at ticket counter
+Difference Between Stack and Queue
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+Topic
+Years Asked
+Frequency
+PUSH and POP 
+algorithm
+2025, 2024, 2022
+High
+Infix to Postfix
+2025, 2024, 2022
+High
+Circular Queue
+2025, 2024, 2022
+High
+Stack vs Queue
+2025, 2024
+Medium
+Postfix Evaluation
+2023
+Medium
+Queue 
+Implementation
+2023
+Medium
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+
+ALL 
+THE 
+BEST
+Engineer dude learning
+Engineer dude learning
+Enginee
+Engin
+Engin
+Engin
+

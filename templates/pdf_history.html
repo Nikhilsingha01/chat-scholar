@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" id="html-root">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PDF History - Chat Scholar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "background": "#031427","surface-tint": "#adc6ff","outline": "#8c909f",
+                    "secondary": "#d0bcff","primary-container": "#4d8eff","primary": "#adc6ff",
+                    "tertiary-container": "#00a572","on-secondary-container": "#c4abff",
+                    "on-primary": "#002e6a","surface-container-lowest": "#000f21",
+                    "surface-container-low": "#0b1c30","error": "#ffb4ab",
+                    "surface-container-high": "#1b2b3f","surface": "#031427","tertiary": "#4edea3",
+                    "surface-bright": "#2a3a4f","outline-variant": "#424754",
+                    "surface-container-highest": "#26364a","surface-container": "#102034",
+                    "secondary-container": "#571bc1","on-surface": "#d3e4fe",
+                    "on-surface-variant": "#c2c6d6","on-primary-container": "#00285d",
+                    "on-background": "#d3e4fe"
+                },
+                borderRadius: { DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px" },
+                fontFamily: { headline: ["Plus Jakarta Sans"], body: ["Inter"] }
+            }
+        }
+    }
+</script>
+
+<script>
+function toggleNotif(){
+    document.getElementById("notifBox")
+    .classList.toggle("hidden");
+}
+</script>
+
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-headline { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .glass-card { background: rgba(38,54,74,0.4); backdrop-filter: blur(20px); }
+    .primary-gradient { background: linear-gradient(to right, #adc6ff, #4d8eff); }
+    .text-gradient {
+        background: linear-gradient(to right, #adc6ff, #4d8eff);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+</style>
+</head>
+
+<body class="bg-background text-on-background font-body selection:bg-primary/30 min-h-screen">
+
+<!-- ✅ Sidebar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/90 backdrop-blur-xl flex flex-col p-6 border-r border-slate-800/15 z-50">
+     <div class="mb-10">
+        <h1 class="text-xl font-bold bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] bg-clip-text text-transparent font-plus-jakarta">
+            Chat Scholar
+        </h1>
+        <p class="text-[10px] uppercase tracking-widest text-slate-500 font-medium mt-1">
+            Educational AI
+        </p>
+    </div>
+
+    <nav class="flex-1 space-y-2">
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 hover:bg-slate-800/50 transition-colors rounded-full text-sm font-medium font-headline"
+            href="{{ url_for('home') }}">
+            <span class="material-symbols-outlined">home</span><span>Home</span>
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 hover:bg-slate-800/50 transition-colors rounded-full text-sm font-medium font-headline"
+            href="{{ url_for('pdf_chat') }}">
+            <span class="material-symbols-outlined">chat_bubble</span><span>PDF Chat</span>
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 hover:bg-slate-800/50 transition-colors rounded-full text-sm font-medium font-headline"
+            href="{{ url_for('essay_rubric') }}">
+            <span class="material-symbols-outlined">auto_stories</span><span>Essay Grading</span>
+        </a>
+        <!-- Active: PDF History -->
+        <a class="flex items-center gap-3 bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] text-slate-950 rounded-full px-4 py-2 font-bold text-sm font-headline"
+            href="{{ url_for('pdf_history') }}">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history</span>
+            <span>PDF History</span>
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 hover:bg-slate-800/50 transition-colors rounded-full text-sm font-medium font-headline"
+            href="{{ url_for('essay_history') }}">
+            <span class="material-symbols-outlined">description</span><span>Essay History</span>
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5"
+           href="{{ url_for('profile') }}">
+            <span class="material-symbols-outlined text-xl">person</span>
+            <span class="text-sm font-medium">Profile</span>
+        </a>
+    </nav>
+
+    <div class="mt-auto p-6 border-t border-white/10">
+
+        <a href="{{ url_for('profile') }}"
+           class="flex items-center gap-3 mb-6">
+
+            <img src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}"
+                 class="w-12 h-12 rounded-full object-cover">
+
+            <div>
+                <p class="text-white text-sm font-semibold">
+                    {{ current_user.full_name }}
+                </p>
+
+                <p class="text-slate-400 text-xs">
+                    {{ current_user.email }}
+                </p>
+            </div>
+
+        </a>
+
+       <div class="flex justify-center">
+            <a href="{{ url_for('logout') }}"
+               class="flex items-center gap-2 text-slate-400 hover:text-white transition">
+
+                <span class="material-symbols-outlined">logout</span>
+                <span>Logout</span>
+
+            </a>
+        </div>
+
+    </div>
+</aside>
+
+<!-- ✅ Top Navbar -->
+<header class="fixed top-0 right-0 h-16 left-[280px] bg-slate-950/80 backdrop-blur-[20px] z-40 border-b border-slate-800/15">
+    <div class="flex justify-between items-center px-8 h-full">
+        <h2 class="font-headline text-lg font-semibold text-blue-400">PDF History</h2>
+        <div class="flex items-center gap-4">
+            <button onclick="toggleDark()" id="dark-toggle" class="p-2 text-slate-400 hover:text-blue-300 transition-opacity">
+                <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+            </button>
+            <div class="relative">
+
+        <button onclick="toggleNotif()"
+        class="relative text-slate-400 hover:text-blue-300">
+
+            <span class="material-symbols-outlined text-2xl">
+                notifications
+            </span>
+
+            {% if unread_count > 0 %}
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full">
+                {{ unread_count }}
+            </span>
+            {% endif %}
+
+        </button>
+
+        <!-- Dropdown -->
+        <div id="notifBox"
+        class="hidden absolute right-0 mt-4 w-80 bg-slate-900 border border-slate-700 rounded-2xl shadow-xl p-4 z-50">
+
+            <h3 class="text-white font-bold mb-3">Notifications</h3>
+
+            {% if notifications %}
+
+                {% for n in notifications %}
+                <div class="py-3 border-b border-slate-800">
+
+                    <p class="text-sm text-white">
+                        {{ n.message }}
+                    </p>
+
+                    <p class="text-xs text-slate-400 mt-1">
+                        {{ n.created_at.strftime('%d %b %I:%M %p') }}
+                    </p>
+
+                </div>
+                {% endfor %}
+
+            {% else %}
+
+                <p class="text-slate-400 text-sm">
+                    No notifications
+                </p>
+
+            {% endif %}
+
+        </div>
+
+        </div>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('profile') }}">
+            <img
+            src="{{ url_for('static', filename='uploads/' + (current_user.profile_image or 'default.png')) }}"
+            class="w-10 h-10 rounded-full object-cover border-2 border-blue-400 hover:scale-105 transition cursor-pointer">
+        </a>
+        {% endif %}
+        </div>
+    </div>
+</header>
+
+<!-- ✅ Main Content -->
+<main class="ml-[280px] pt-16 min-h-screen bg-surface">
+    <div class="max-w-5xl mx-auto p-8">
+
+        <!-- Page Header + Search -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+            <div>
+                <h1 class="text-4xl font-headline font-extrabold text-gradient mb-2">PDF History</h1>
+                <p class="text-on-surface-variant text-sm">All your uploaded documents and intelligence logs</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Search -->
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+                    <input id="search-input" type="text"
+                        placeholder="Search by filename..."
+                        oninput="filterDocs(this.value)"
+                        class="bg-surface-container-highest border border-outline-variant/20 rounded-full py-2.5 pl-11 pr-5 text-sm text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/30 focus:outline-none w-64"/>
+                </div>
+                <!-- Filter button -->
+                <button class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-sm">filter_list</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ✅ Document List -->
+        <div class="space-y-4" id="doc-list">
+
+            {% if pdfs %}
+            {% for pdf in pdfs %}
+            {% set msg_count = pdf.chats | length %}
+            {% set has_chats = msg_count > 0 %}
+
+            <div class="doc-card group relative flex items-center justify-between p-5 bg-surface-container-low rounded-lg transition-all hover:bg-surface-container-high hover:-translate-y-0.5 duration-300 border border-outline-variant/5"
+                data-filename="{{ pdf.filename | lower }}">
+
+                <!-- Left: Icon + Info -->
+                <div class="flex items-center gap-5">
+                    <!-- File icon -->
+                    <div class="w-14 h-14 bg-error/10 flex items-center justify-center rounded-2xl text-error flex-shrink-0">
+                        {% set ext = pdf.filename.rsplit('.', 1)[-1].lower() if '.' in pdf.filename else 'pdf' %}
+                        {% if ext in ['jpg','jpeg','png'] %}
+                        <span class="material-symbols-outlined text-3xl text-secondary" style="font-variation-settings: 'FILL' 1;">image</span>
+                        {% elif ext == 'docx' %}
+                        <span class="material-symbols-outlined text-3xl text-tertiary" style="font-variation-settings: 'FILL' 1;">article</span>
+                        {% elif ext == 'txt' %}
+                        <span class="material-symbols-outlined text-3xl text-on-surface-variant" style="font-variation-settings: 'FILL' 1;">text_snippet</span>
+                        {% else %}
+                        <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">picture_as_pdf</span>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <h3 class="text-on-surface font-headline font-bold text-base mb-1 truncate max-w-[320px]"
+                            title="{{ pdf.filename }}">
+                            {{ pdf.filename }}
+                        </h3>
+                        <div class="flex items-center gap-3 mt-1">
+                            <span class="text-sm text-on-surface-variant">
+                                Uploaded: {{ pdf.uploaded_at.strftime('%b %d, %Y') }}
+                            </span>
+                            <span class="text-sm text-on-surface-variant px-2 py-0.5 bg-surface-container-highest rounded-full text-[12px] font-medium border border-outline-variant/15">
+                                {{ ext.upper() }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Message count + Actions -->
+                <div class="flex items-center gap-8">
+                    <div class="flex flex-col items-end">
+                        <div class="flex items-center gap-1.5 {% if has_chats %}text-tertiary{% else %}text-on-surface-variant{% endif %}">
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+                            <span class="font-bold text-sm">{{ msg_count }} Messages</span>
+                        </div>
+                        <span class="text-[11px] text-slate-500 mt-0.5">
+                            {% if has_chats %}
+                                Last active {{ pdf.uploaded_at.strftime('%b %d') }}
+                            {% else %}
+                                Never analyzed
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <a href="{{ url_for('load_pdf_chat', pdf_id=pdf.id) }}"
+                            class="px-6 py-2.5 rounded-full text-slate-950 font-bold text-sm transition-all flex items-center gap-2
+                            {% if has_chats %} primary-gradient hover:shadow-[0_0_20px_rgba(173,198,255,0.3)]
+                            {% else %} border-2 border-outline-variant text-on-surface hover:bg-surface-bright {% endif %}">
+                            Open Chat
+                        </a>
+                        <!-- Delete button (POST form) -->
+                        <form action="/delete_pdf/{{ pdf.id }}" method="post"
+                            onsubmit="return confirm('Delete this document and all its chat history?')">
+                            <button type="submit"
+                                class="p-2.5 text-on-surface-variant hover:text-error transition-colors rounded-full hover:bg-error/10">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+
+            {% else %}
+            <!-- Empty state -->
+            <div class="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-outline-variant/20 rounded-2xl">
+                <span class="material-symbols-outlined text-7xl text-slate-700 mb-5">folder_open</span>
+                <h3 class="font-headline font-bold text-on-surface text-xl mb-2">No documents yet</h3>
+                <p class="text-on-surface-variant text-sm max-w-sm mb-8">Upload your first document to start analyzing it with AI</p>
+                <a href="{{ url_for('pdf_chat') }}"
+                    class="px-8 py-3 rounded-full primary-gradient text-slate-950 font-bold text-sm hover:shadow-[0_0_20px_rgba(173,198,255,0.2)] transition-all">
+                    Upload Document
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ✅ Stats Section -->
+        {% if pdfs %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+
+            <!-- Total Storage -->
+            <div class="glass-card p-6 rounded-lg border border-outline-variant/10">
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-3">Total Documents</p>
+                <div class="flex items-end gap-3">
+                    <h4 class="text-3xl font-headline font-extrabold">{{ pdfs | length }}</h4>
+                    <span class="text-sm text-on-surface-variant mb-1">files</span>
+                </div>
+                <!-- Progress bar (visual only) -->
+                <div class="flex-1 h-1.5 bg-surface-container-highest rounded-full mt-3 overflow-hidden">
+                    <div class="h-full primary-gradient" style="width: {{ [pdfs|length * 10, 100] | min }}%"></div>
+                </div>
+                <p class="text-[11px] text-on-surface-variant mt-2">Across your Scholar account</p>
+            </div>
+
+            <!-- Insight Index -->
+            <div class="glass-card p-6 rounded-lg border border-outline-variant/10">
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-3">Insight Index</p>
+               <div class="flex items-center gap-3">
+                    <h4 class="text-3xl font-headline font-extrabold">
+                        {{ pdfs | map(attribute='chats') | map('length') | sum }}
+                    </h4>
+                    <span class="text-tertiary text-xs font-bold bg-tertiary/10 px-2 py-0.5 rounded-full">messages</span>
+                </div>
+                <p class="text-[11px] text-on-surface-variant mt-3">Questions answered by AI from these files</p>
+            </div>
+
+            <!-- Upgrade CTA -->
+            <div class="glass-card p-6 rounded-lg border border-outline-variant/10 relative overflow-hidden group cursor-pointer hover:border-primary/30 transition-colors">
+                <div class="relative z-10">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Need more space?</p>
+                    <h4 class="text-lg font-headline font-bold text-on-surface">Upgrade to Scholar Plus</h4>
+                    <p class="text-[11px] text-on-surface-variant mt-1">Unlimited uploads &amp; priority AI reasoning</p>
+                </div>
+                <div class="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all">
+                    <span class="material-symbols-outlined text-8xl">auto_awesome</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</main>
+
+<script>
+// ✅ Dark mode
+const html = document.getElementById('html-root');
+const themeIcon = document.getElementById('theme-icon');
+if (localStorage.getItem('darkMode') === 'false') {
+    html.classList.remove('dark');
+    if (themeIcon) themeIcon.textContent = 'light_mode';
+}
+function toggleDark() {
+    const isDark = html.classList.toggle('dark');
+    localStorage.setItem('darkMode', isDark);
+    if (themeIcon) themeIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
+}
+
+// ✅ Search / filter documents
+function filterDocs(query) {
+    const cards = document.querySelectorAll('.doc-card');
+    cards.forEach(card => {
+        const name = card.dataset.filename || '';
+        card.style.display = name.includes(query.toLowerCase()) ? '' : 'none';
+    });
+}
+</script>
+
+</body>
+</html>

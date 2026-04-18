@@ -1,0 +1,96 @@
+Nikhil Singhal
++91-9301103485 | singhalnikhil010@gmail.com | https://
+www.linkedin.com/in/nikhilsinghal01 GitHub :- https://
+github.com/Nikhilsingha01 | portfolio :- https://nikhilportfolio-
+mocha.vercel.app/
+Data Science and Machine Learning enthusiast with hands-on
+experience building end-to-end ML pipelines and deploying
+production grade systems. Proficient in Python, NLP, Django
+.Seeking an internship to apply practical ML skills to real-world
+problems while learning from experienced data science teams.
+EDUCATION
+LNCT Group of College Bhopal , India
+B-Tech in Artificial Intelligence and Data Science 2024-2028
+Among the top 5% of the batch | 1st year CGPA : 8.07
+Relevant Coursework: Machine Learning, Data Analysis, Database
+Management, NLP , Python programming
+Class 12th | 92 % Marks
+TECHNICAL SKILLS
+Programming: Python, SQL
+ML/Data Science: Machine Learning, NLP, Statistical Analysis,
+Feature Engineering, EDA Libraries & Tools: scikit-learn, pandas,
+
+Streamlit
+Visualization: Power BI, Matplotlib, Seaborn Other: Git, Jupyter
+Notebook, MS-Excel
+PROJECTS
+Sales Performance Dashboard | Personal Project
+Designed and developed interactive dashboards in Power BI
+analyzing 12 months of sales data (50k+ transactions) for OLA
+Reduced data interpretation time by 50% through automated
+visualizations, enabling stakeholders to identify trends within 5
+minutes instead of 30+
+Identified top-performing regions and customer segments,
+supporting strategic business decisions
+Tech Stack: Tableau, Power BI, SQL, Excel
+Movie Recommendation System | Personal Project | May 2025 |
+GitHub: https://github.com/Nikhilsingha01/
+movie_recommended_system
+Built a content-based recommendation system using Python and
+scikit-learn, utilizing cosine similarity to match user preferences
+Preprocessed 5k+ movie metadata using NLP techniques (TF-IDF
+vectorization)
+Achieved 89% precision in recommendations during testing with
+100+ test cases
+Deployed interactive web interface using Streamlit for real-time
+recommendations
+Tech Stack: Python, scikit-learn, pandas, TF-IDF, Streamlit
+
+Student Marks Prediction System | Personal Project | June 2025 |
+GitHub: https://github.com/Nikhilsingha01/Marks-prediction
+Developed a machine learning regression model to predict student
+exam scores using Python and scikit-learn, analyzing 2,000+
+student records
+Engineered 15+ features from raw data (Reading Score, Writing
+Score, Course type) with careful data preprocessing
+Compared 5 regression models (Linear, Gradient Boosting, Catboost,
+RF, XGBoost) and selected best performer: Random Forest with R²
+= 0.87
+Deployed interactive prediction tool using Streamlit for educational
+analytics
+Tech Stack: Python, pandas, scikit-learn, Streamlit, numpy
+Network Security Threat Detection System | June 2025 | GitHub:
+https://github.com/Nikhilsingha01/network_security-1
+Engineered end-to-end ML pipeline processing 50k+ network
+records, achieving 95% accuracy with <50ms latency at 1,000+
+predictions/hour
+Trained optimized models (Random Forest, XGBoost, SVM) via
+GridSearchCV with 99% data quality and 95% precision—zero false
+negatives
+Deployed production REST API with FastAPI; managed models on
+AWS S3 and metadata in MongoDB for audit-ready deployment
+Tech Stack: Python, scikit-learn, XGBoost, FastAPI, AWS S3,
+MongoDB
+Customer Feedback Sentiment Analysis | September 2025 | GitHub:
+https://github.com/Nikhilsingha01/Feedback
+Engineered NLP pipeline classifying customer feedback as positive,
+
+negative, or neutral across 10k+ samples; achieved 88% accuracy
+with 86% precision and 87% recall
+Preprocessed and engineered 12+ features (TF-IDF, embeddings,
+sentiment lexicons) optimizing 3 classification models (LogReg/
+SVM/Naive Bayes) with GridSearchCV
+Deployed interactive Streamlit dashboard enabling real-time
+sentiment classification with confidence scores for customer
+satisfaction tracking
+Tech Stack: Python, NLP, scikit-learn, TF-IDF, Streamlit, NLTK,
+pandas
+CERTIFICATIONS
+Data Analyst Bootcamp Certificate | Udemy | 2025 (Skills: SQL,
+Tableau, Data Analysis, Statistics)
+HONORS AWARDS
+Selected in internal round of Smart India Hackathon 2025
+(competitive technical selection)
+Solved 50+ LeetCode DSA problems demonstrating strong problem-
+solving foundation
+

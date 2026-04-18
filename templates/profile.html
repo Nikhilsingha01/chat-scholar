@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block page_heading %}
+<h2 class="text-2xl font-bold">My Profile</h2>
+{% endblock %}
+
+{% block content %}
+
+<div class="grid md:grid-cols-2 gap-8">
+
+    <!-- Left Card -->
+    <div class="bg-slate-900 rounded-3xl p-8 text-center">
+
+        <img src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}"
+        class="w-36 h-36 rounded-full mx-auto object-cover border-4 border-blue-500">
+
+        <h3 class="text-2xl font-bold mt-5">
+            {{ current_user.full_name }}
+        </h3>
+
+        <p class="text-slate-400 mt-2">
+            @{{ current_user.username }}
+        </p>
+
+        <p class="text-slate-400 mt-2">
+            {{ current_user.email }}
+        </p>
+
+    </div>
+
+    <!-- Right Form -->
+    <div class="bg-slate-900 rounded-3xl p-8">
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+
+            <input type="text" name="full_name"
+            value="{{ current_user.full_name }}"
+            placeholder="Full Name"
+            class="w-full bg-slate-800 rounded-xl px-4 py-3">
+
+            <textarea name="bio"
+            placeholder="Your bio"
+            class="w-full bg-slate-800 rounded-xl px-4 py-3 h-28">{{ current_user.bio }}</textarea>
+
+            <input type="text" name="college"
+            value="{{ current_user.college }}"
+            placeholder="College"
+            class="w-full bg-slate-800 rounded-xl px-4 py-3">
+
+            <input type="text" name="phone"
+            value="{{ current_user.phone }}"
+            placeholder="Phone"
+            class="w-full bg-slate-800 rounded-xl px-4 py-3">
+
+            <input type="file" name="profile_image"
+            class="w-full bg-slate-800 rounded-xl px-4 py-3">
+
+            <button type="submit"
+            class="w-full bg-gradient-to-r from-blue-400 to-blue-600 py-3 rounded-xl font-bold">
+                Save Profile
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

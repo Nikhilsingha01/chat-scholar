@@ -1,0 +1,1176 @@
+from PIL import Image
+import pytesseract
+import io, os
+import re, fitz
+from dotenv import load_dotenv
+from langchain_groq import ChatGroq
+import os, markdown, datetime
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import SentenceTransformerEmbeddings
+from flask import Flask, render_template, request, redirect, session, url_for
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_bcrypt import Bcrypt
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
+from langchain.schema import SystemMessage, HumanMessage
+
+from flask_mail import Mail, Message
+from flask_dance.contrib.google import make_google_blueprint, google
+
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(BASE_DIR, ".env")
+
+load_dotenv(env_path)
+
+print("ENV PATH:", env_path)
+print("CLIENT ID:", os.getenv("GOOGLE_CLIENT_ID"))
+print(os.listdir(BASE_DIR))
+
+DATA_DIR = "__data__"
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
+
+app = Flask(__name__)
+# ✅ Email config
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'singhalnikhil010@gmail.com'      # ✅ your gmail
+app.config['MAIL_PASSWORD'] = 'jiuv pdtl bsku tkih'    # ✅ gmail app password
+app.config['MAIL_DEFAULT_SENDER'] = 'singhalnikhil010@gmail.com'
+
+mail = Mail(app)
+
+app.config['SECRET_KEY'] = 'chatscholar_secret_key_2024'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chatscholar.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
+
+
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # ✅ allows HTTP for local dev
+
+from flask_session import Session
+
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
+google_bp = make_google_blueprint(
+    client_id=os.getenv("GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    scope=[
+        "openid",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile"
+    ],
+    redirect_to="google_login"
+)
+
+app.register_blueprint(google_bp, url_prefix="/login")
+
+app.config["SESSION_COOKIE_NAME"] = "chat_scholar_session"
+app.config["SESSION_PERMANENT"] = False
+
+import warnings
+warnings.filterwarnings("ignore", message="Scope has changed")
+
+# print(info)
+
+@app.route("/google_login")
+def google_login():
+    if not google.authorized:
+        return redirect(url_for("google.login"))
+
+    resp = google.get("/oauth2/v2/userinfo")
+
+    if not resp.ok:
+        return redirect(url_for("login"))
+
+    info = resp.json()
+
+    email = info.get("email")
+    name = info.get("name")
+
+    if not name or name.strip() == "":
+        name = email.split("@")[0]
+
+    username = email.split("@")[0]
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        user = User(
+            username=username,
+            full_name=name,   # ✅ always filled
+            email=email,
+            password=bcrypt.generate_password_hash("google_user").decode("utf-8"),
+            is_verified=True
+        )
+
+        db.session.add(user)
+        db.session.commit()
+
+    login_user(user)
+    add_notification(user.id, "Welcome back!")
+
+    return redirect(url_for("home"))
+
+@app.route("/clear_session")
+def clear_session():
+    session.clear()
+    return "Session cleared"
+
+# =====================
+# DATABASE MODELS
+# =====================
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    full_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+
+    date_of_birth = db.Column(db.Date, nullable=True)
+
+    is_verified = db.Column(db.Boolean, default=False)
+    otp = db.Column(db.String(6), nullable=True)
+    otp_expiry = db.Column(db.DateTime, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now)
+
+    # Profile fields
+    profile_image = db.Column(db.String(200), default="default.png")
+    bio = db.Column(db.String(300))
+    college = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
+
+    # Relationships
+    pdfs = db.relationship('PDFHistory', backref='user', lazy=True)
+    chats = db.relationship('ChatHistory', backref='user', lazy=True)
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    message = db.Column(db.String(300))
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now)
+
+class PDFHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    filename = db.Column(db.String(200), nullable=False)
+    uploaded_at = db.Column(db.DateTime, default=datetime.datetime.now)
+    chats = db.relationship('ChatHistory', backref='pdf', lazy=True)
+
+class ChatHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    pdf_id = db.Column(db.Integer, db.ForeignKey('pdf_history.id'), nullable=False)
+    role = db.Column(db.String(10), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
+
+class EssayHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    essay_text = db.Column(db.Text, nullable=False)
+    result = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
+    user = db.relationship('User', backref='essays')
+
+import random
+import re as regex_module
+
+def generate_otp():
+    return str(random.randint(100000, 999999))
+
+def send_otp_email(email, otp, username):
+    try:
+        msg = Message(
+            subject="Chat Scholar - Verify Your Email",
+            recipients=[email]
+        )
+        msg.html = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <h2 style="color: #3b82f6;">Welcome to Chat Scholar!</h2>
+            <p>Hi <strong>{username}</strong>,</p>
+            <p>Your OTP verification code is:</p>
+            <div style="text-align: center; padding: 20px;">
+                <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #8b5cf6;">{otp}</span>
+            </div>
+            <p>This code expires in <strong>10 minutes</strong>.</p>
+            <p style="color: #94a3b8; font-size: 12px;">If you didn't sign up for Chat Scholar, ignore this email.</p>
+        </div>
+        """
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"Email error: {e}")
+        return False
+
+def validate_email(email):
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return regex_module.match(pattern, email)
+
+def validate_password(password):
+    # Min 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters"
+    if not regex_module.search(r'[A-Z]', password):
+        return False, "Password must contain at least one uppercase letter"
+    if not regex_module.search(r'[a-z]', password):
+        return False, "Password must contain at least one lowercase letter"
+    if not regex_module.search(r'\d', password):
+        return False, "Password must contain at least one number"
+    if not regex_module.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        return False, "Password must contain at least one special character"
+    return True, "Valid"
+
+def validate_age(dob_str):
+    try:
+        dob = datetime.datetime.strptime(dob_str, '%Y-%m-%d').date()
+        today = datetime.date.today()
+        age = (today - dob).days // 365
+        if age < 13:
+            return False, "You must be at least 13 years old"
+        if age > 120:
+            return False, "Please enter a valid date of birth"
+        return True, dob
+    except:
+        return False, "Invalid date format"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.context_processor
+def inject_user():
+    return dict(current_user=current_user)
+
+def add_notification(user_id, msg):
+    new = Notification(user_id=user_id, message=msg)
+    db.session.add(new)
+    db.session.commit()
+
+# =====================
+# IN-MEMORY SESSION STORE
+# =====================
+
+pdf_sessions = {}
+active_session = None
+rubric_text = ""
+
+# ✅ Groq LLM - no daily limit issues
+llm = ChatGroq(
+    model="llama-3.1-8b-instant",
+    temperature=0.3,
+    api_key="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"  # ✅ put your groq key here
+)
+
+# =====================
+# HELPER FUNCTIONS
+# =====================
+
+def get_pdf_text(pdf_docs):
+    text = ""
+    for pdf in pdf_docs:
+        filename = os.path.join(DATA_DIR, pdf.filename)
+        pdf_text = ""
+        try:
+            # ✅ Read file bytes
+            pdf.seek(0)
+            pdf_bytes = pdf.read()
+            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+            for page in doc:
+                extracted = page.get_text()
+                if extracted:
+                    text += extracted + '\n'
+                    pdf_text += extracted + '\n'
+            doc.close()
+        except Exception as e:
+            pdf_text = f"Could not extract text: {str(e)}"
+
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(pdf_text)
+    return text
+
+
+def get_text_chunks(text):
+    splitter = CharacterTextSplitter(
+        separator="\n", chunk_size=1000,
+        chunk_overlap=200, length_function=len
+    )
+    return splitter.split_text(text)
+
+def get_vectorstore(text_chunks):
+    if not text_chunks:
+        raise ValueError("No text found in the uploaded PDF.")
+    try:
+        embeddings = SentenceTransformerEmbeddings(
+            model_name="all-MiniLM-L6-v2"
+        )
+        return FAISS.from_texts(texts=text_chunks, embedding=embeddings)
+    except Exception as e:
+        raise ValueError(f"Embedding failed: {str(e)}")
+
+def get_conversation_chain(vectorstore):
+    memory = ConversationBufferMemory(
+        memory_key="chat_history",
+        return_messages=True
+    )
+    return ConversationalRetrievalChain.from_llm(
+        llm=llm,
+        retriever=vectorstore.as_retriever(),
+        memory=memory
+    )
+
+ALLOWED_EXTENSIONS = {'pdf', 'jpg', 'jpeg', 'png', 'txt', 'docx'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def extract_text_from_file(file):
+    filename = file.filename.lower()
+    ext = filename.rsplit('.', 1)[-1] if '.' in filename else ''
+
+    # ✅ PDF
+    if ext == 'pdf':
+        text = ''
+        file.seek(0)
+        pdf_bytes = file.read()
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        for page in doc:
+            extracted = page.get_text()
+            if extracted:
+                text += extracted + '\n'
+        doc.close()
+        return text.strip()
+
+    # ✅ Images (JPG, JPEG, PNG)
+    elif ext in ['jpg', 'jpeg', 'png']:
+        file.seek(0)
+        image = Image.open(file)
+        text = pytesseract.image_to_string(image)
+        return text.strip()
+
+    # ✅ Plain text
+    elif ext == 'txt':
+        file.seek(0)
+        return file.read().decode('utf-8', errors='ignore')
+
+    # ✅ Word documents
+    elif ext == 'docx':
+        from docx import Document
+        file.seek(0)
+        doc = Document(file)
+        text = '\n'.join([para.text for para in doc.paragraphs])
+        return text.strip()
+
+    return ''
+
+def chat_render(**kwargs):
+    user_pdfs = []
+    if current_user.is_authenticated:
+        user_pdfs = PDFHistory.query.filter_by(
+            user_id=current_user.id
+        ).order_by(PDFHistory.uploaded_at.desc()).all()
+    return render_template('new_chat.html',
+                           sessions=list(pdf_sessions.keys()),
+                           active=active_session,
+                           user_pdfs=user_pdfs,
+                           **kwargs)
+
+def get_external_resources(topic):
+    messages = [
+        SystemMessage(content="""
+            You are a research assistant. Given a topic, return exactly 3 verified
+            educational resource links in this EXACT format:
+            1. [Title](URL) - Source name
+            2. [Title](URL) - Source name
+            3. [Title](URL) - Source name
+            Only use: Wikipedia, Khan Academy, MIT OpenCourseWare, Coursera,
+            ArXiv, Google Scholar, BBC, Nature, Science Daily.
+            Return ONLY the 3 links, no extra text.
+        """),
+        HumanMessage(content=f"Find 3 verified educational resources about: {topic}")
+    ]
+    try:
+        response = llm.invoke(messages)
+        return markdown.markdown(response.content)
+    except Exception:
+        return None
+
+def get_followup_questions(question, answer):
+    messages = [
+        SystemMessage(content="""
+            Suggest exactly 3 short follow-up questions based on the Q&A.
+            Return ONLY 3 questions, one per line, no numbering.
+        """),
+        HumanMessage(content=f"Question: {question}\nAnswer: {answer}")
+    ]
+    try:
+        response = llm.invoke(messages)
+        questions = [q.strip() for q in response.content.strip().split('\n') if q.strip()]
+        return questions[:3]
+    except Exception:
+        return []
+
+def _grade_essay(essay):
+    import re
+    essay = re.sub(r'\(cid:\d+\)', '', essay).strip()
+    essay = essay[:3000] if len(essay) > 3000 else essay
+
+    if not essay:
+        return "<p style='color:red;'>⚠ Could not extract readable text.</p>"
+
+    messages = [
+        SystemMessage(content=f"""
+            You are an English essay grading expert.
+            Evaluate based on this rubric: {rubric_text}
+
+            You MUST respond in this EXACT structured format:
+
+            ## Grade: X/10
+
+            ## Strengths
+            - **Point 1 title**: explanation here
+            - **Point 2 title**: explanation here
+            - **Point 3 title**: explanation here
+
+            ## Weaknesses
+            - **Point 1 title**: explanation here
+            - **Point 2 title**: explanation here
+            - **Point 3 title**: explanation here
+
+            ## Suggestions for Improvement
+            - **Point 1 title**: explanation here
+            - **Point 2 title**: explanation here
+            - **Point 3 title**: explanation here
+
+            STRICT RULES:
+            - Always use ## for section headings
+            - Always use - for bullet points
+            - Always bold the point title using **title**
+            - Never write plain paragraphs
+            - Each bullet must have a bold title followed by colon and explanation
+        """)
+    ]
+    messages.append(HumanMessage(content="ESSAY: " + essay))
+    try:
+        response = llm.invoke(messages)
+        return markdown.markdown(response.content)
+    except Exception as e:
+        return f"<p style='color:red;'>⚠ Error: {str(e)}</p>"
+
+@app.route("/delete_essay/<int:essay_id>", methods=["POST"])
+@login_required
+def delete_essay(essay_id):
+
+    essay = EssayHistory.query.get_or_404(essay_id)
+
+    # Security check
+    if essay.user_id != current_user.id:
+        return redirect(url_for("essay_history"))
+
+    db.session.delete(essay)
+    db.session.commit()
+
+    return redirect(url_for("essay_history"))
+
+# =====================
+# AUTH ROUTES
+# =====================
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if current_user.is_authenticated:
+        return redirect('/')
+    if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        dob_str = request.form.get('date_of_birth', '')
+
+        # ✅ Validate all fields
+        if not all([full_name, username, email, password, dob_str]):
+            return render_template('signup.html', error="All fields are required.")
+
+        if len(full_name) < 2:
+            return render_template('signup.html', error="Please enter your full name.")
+
+        if len(username) < 3:
+            return render_template('signup.html', error="Username must be at least 3 characters.")
+
+        if not validate_email(email):
+            return render_template('signup.html', error="Please enter a valid email address.")
+
+        if password != confirm_password:
+            return render_template('signup.html', error="Passwords do not match.")
+
+        is_valid_pw, pw_msg = validate_password(password)
+        if not is_valid_pw:
+            return render_template('signup.html', error=pw_msg)
+
+        is_valid_age, dob_result = validate_age(dob_str)
+        if not is_valid_age:
+            return render_template('signup.html', error=dob_result)
+
+        if User.query.filter_by(email=email).first():
+            return render_template('signup.html', error="Email already registered.")
+
+        if User.query.filter_by(username=username).first():
+            return render_template('signup.html', error="Username already taken.")
+
+        # ✅ Generate OTP
+        otp = generate_otp()
+        otp_expiry = datetime.datetime.now() + datetime.timedelta(minutes=10)
+
+        # ✅ Store in flask session temporarily
+        session['pending_user'] = {
+            'full_name': full_name,
+            'username': username,
+            'email': email,
+            'password': bcrypt.generate_password_hash(password).decode('utf-8'),
+            'date_of_birth': dob_str,
+            'otp': otp,
+            'otp_expiry': otp_expiry.isoformat()
+        }
+
+        # ✅ Send OTP email
+        sent = send_otp_email(email, otp, full_name)
+        if not sent:
+            return render_template('signup.html',
+                                   error="Could not send OTP email. Please check your email address.")
+
+        return redirect('/verify_otp')
+
+    return render_template('signup.html')
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+@app.route('/verify_otp', methods=['GET', 'POST'])
+def verify_otp():
+    pending = session.get('pending_user')
+    if not pending:
+        return redirect('/signup')
+
+    if request.method == 'POST':
+        entered_otp = request.form.get('otp', '').strip()
+        action = request.form.get('action', '')
+
+        # ✅ Resend OTP
+        if action == 'resend':
+            otp = generate_otp()
+            otp_expiry = datetime.datetime.now() + datetime.timedelta(minutes=10)
+            pending['otp'] = otp
+            pending['otp_expiry'] = otp_expiry.isoformat()
+            session['pending_user'] = pending
+            send_otp_email(pending['email'], otp, pending['full_name'])
+            return render_template('verify_otp.html',
+                                   email=pending['email'],
+                                   success="New OTP sent to your email.")
+
+        # ✅ Verify OTP
+        expiry = datetime.datetime.fromisoformat(pending['otp_expiry'])
+        if datetime.datetime.now() > expiry:
+            return render_template('verify_otp.html',
+                                   email=pending['email'],
+                                   error="OTP has expired. Please request a new one.")
+
+        if entered_otp != pending['otp']:
+            return render_template('verify_otp.html',
+                                   email=pending['email'],
+                                   error="Invalid OTP. Please try again.")
+
+        # ✅ Create user
+        dob = datetime.datetime.strptime(pending['date_of_birth'], '%Y-%m-%d').date()
+        user = User(
+            full_name=pending['full_name'],
+            username=pending['username'],
+            email=pending['email'],
+            password=pending['password'],
+            date_of_birth=dob,
+            is_verified=True
+        )
+        db.session.add(user)
+        db.session.commit()
+        session.pop('pending_user', None)
+        login_user(user)
+        return redirect('/')
+
+    return render_template('verify_otp.html', email=pending.get('email', ''))
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect('/')
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+
+        if not email or not password:
+            return render_template('login.html', error="All fields are required.")
+
+        if not validate_email(email):
+            return render_template('login.html', error="Please enter a valid email address.")
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            return render_template('login.html', error="No account found with this email.")
+
+        if not bcrypt.check_password_hash(user.password, password):
+            return render_template('login.html', error="Incorrect password.")
+
+        if not user.is_verified:
+            return render_template('login.html',
+                                   error="Please verify your email first.")
+
+        login_user(user)
+        return redirect('/')
+
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/login')
+
+@app.context_processor
+def inject_notifications():
+
+    if current_user.is_authenticated:
+
+        notifications = Notification.query.filter_by(
+            user_id=current_user.id
+        ).order_by(Notification.created_at.desc()).limit(5).all()
+
+        unread_count = Notification.query.filter_by(
+            user_id=current_user.id,
+            is_read=False
+        ).count()
+
+        return dict(
+            notifications=notifications,
+            unread_count=unread_count
+        )
+
+    return dict(
+        notifications=[],
+        unread_count=0
+    )
+
+# =====================
+# Profile Section
+# =====================
+
+from werkzeug.utils import secure_filename
+import os
+
+UPLOAD_FOLDER = "static/uploads"
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+
+    if request.method == 'POST':
+
+        current_user.full_name = request.form.get("full_name")
+        current_user.bio = request.form.get("bio")
+        current_user.college = request.form.get("college")
+        current_user.phone = request.form.get("phone")
+
+        file = request.files.get("profile_image")
+
+        if file and file.filename != "":
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(filepath)
+
+            current_user.profile_image = filename
+
+        db.session.commit()
+
+        add_notification(current_user.id, "Profile updated successfully")
+
+        return redirect(url_for("profile"))
+
+    return render_template("profile.html")
+# =====================
+# MAIN ROUTES
+# =====================
+
+@app.route('/')
+def home():
+    return render_template('new_home.html')
+
+@app.route('/pdf_chat', methods=['GET', 'POST'])
+@login_required
+def pdf_chat():
+    user_pdfs = PDFHistory.query.filter_by(
+        user_id=current_user.id
+    ).order_by(PDFHistory.uploaded_at.desc()).all()
+
+
+
+    return render_template('new_pdf_chat.html', user_pdfs=user_pdfs)
+
+@app.route('/process', methods=['POST'])
+@login_required
+def process_documents():
+    global active_session, pdf_sessions
+    try:
+        pdf_docs = request.files.getlist('pdf_docs')
+        if not pdf_docs or pdf_docs[0].filename == '':
+            return render_template('new_pdf_chat.html',
+                                   error="Please upload at least one PDF.")
+
+        # ✅ Check file size - max 10MB
+        pdf_docs[0].seek(0, 2)  # seek to end
+        file_size = pdf_docs[0].tell()
+        pdf_docs[0].seek(0)  # reset
+        if file_size > 10 * 1024 * 1024:
+            return render_template('new_pdf_chat.html',
+                                   error="PDF too large. Please upload a PDF under 10MB.")
+
+        session_name = pdf_docs[0].filename.replace('.pdf', '')
+        raw_text = get_pdf_text(pdf_docs)
+
+        if not raw_text.strip():
+            return render_template('new_pdf_chat.html',
+                                   error="Could not extract text from the PDF.")
+
+        # ✅ Limit text size to prevent memory issues
+        raw_text = raw_text[:50000]
+
+        text_chunks = get_text_chunks(raw_text)
+        vectorstore = get_vectorstore(text_chunks)
+        conversation_chain = get_conversation_chain(vectorstore)
+
+        pdf_sessions[session_name] = {
+            'vectorstore': vectorstore,
+            'chain': conversation_chain
+        }
+        active_session = session_name
+
+        pdf_record = PDFHistory(
+            user_id=current_user.id,
+            filename=pdf_docs[0].filename
+        )
+        db.session.add(pdf_record)
+        db.session.commit()
+        session['current_pdf_id'] = pdf_record.id
+
+        add_notification(current_user.id, "PDF uploaded successfully")
+
+        return redirect('/chat')
+
+    except Exception as e:
+        return render_template('new_pdf_chat.html', error=f"Error: {str(e)}")
+
+@app.route('/chat', methods=['GET', 'POST'])
+@login_required
+def chat():
+    global active_session, pdf_sessions
+    resources = None
+    followups = []
+    summary = None
+    chat_history = []
+
+    current_pdf_id = session.get('current_pdf_id')
+    if current_pdf_id:
+        chat_history = ChatHistory.query.filter_by(
+            user_id=current_user.id,
+            pdf_id=current_pdf_id
+        ).order_by(ChatHistory.timestamp).all()
+
+    conversation_chain = pdf_sessions.get(active_session, {}).get('chain')
+
+    if request.method == 'POST':
+        user_question = request.form['user_question']
+
+        if conversation_chain is None:
+            return chat_render(chat_history=[], summary=None,
+                               resources=None, followups=[],
+                               error="Please upload a PDF first.")
+        try:
+            response = conversation_chain({'question': user_question})
+            raw_history = response['chat_history']
+            ai_answer = raw_history[-1].content if raw_history else ""
+
+            if current_pdf_id:
+                db.session.add(ChatHistory(
+                    user_id=current_user.id,
+                    pdf_id=current_pdf_id,
+                    role='human',
+                    content=user_question
+                ))
+                db.session.add(ChatHistory(
+                    user_id=current_user.id,
+                    pdf_id=current_pdf_id,
+                    role='ai',
+                    content=ai_answer
+                ))
+                db.session.commit()
+
+            # ✅ Only get followups every 2nd question to save API calls
+            if len(chat_history) % 4 == 0:
+                followups = get_followup_questions(user_question, ai_answer)
+
+        except Exception as e:
+            return chat_render(chat_history=chat_history, summary=None,
+                               resources=None, followups=[],
+                               error=f"Error: {str(e)}")
+
+        # ✅ Get resources after main response
+        resources = get_external_resources(user_question)
+
+        # Reload from DB
+        if current_pdf_id:
+            chat_history = ChatHistory.query.filter_by(
+                user_id=current_user.id,
+                pdf_id=current_pdf_id
+            ).order_by(ChatHistory.timestamp).all()
+
+    formatted_history = []
+    for msg in chat_history:
+        role = msg.role if hasattr(msg, 'role') else msg.type
+        content = msg.content
+        time = msg.timestamp.strftime("%I:%M %p") if hasattr(msg, 'timestamp') else datetime.datetime.now().strftime("%I:%M %p")
+        formatted_history.append({
+            'type': role,
+            'content': markdown.markdown(content) if role == 'ai' else content,
+            'time': time
+        })
+
+    return chat_render(
+        chat_history=formatted_history,
+        resources=resources,
+        followups=followups,
+        summary=summary
+    )
+
+@app.route('/pdf_history')
+@login_required
+def pdf_history():
+    pdfs = PDFHistory.query.filter_by(
+        user_id=current_user.id
+    ).order_by(PDFHistory.uploaded_at.desc()).all()
+    return render_template('pdf_history.html', pdfs=pdfs)
+
+@app.route('/delete_pdf/<int:pdf_id>', methods=['POST'])
+@login_required
+def delete_pdf(pdf_id):
+    pdf = PDFHistory.query.get_or_404(pdf_id)
+    if pdf.user_id != current_user.id:
+        return redirect(url_for('pdf_history'))
+
+    # Delete all chats for this PDF first
+    ChatHistory.query.filter_by(pdf_id=pdf_id).delete()
+
+    # Clear session if this was the active PDF
+    if session.get('current_pdf_id') == pdf_id:
+        session.pop('current_pdf_id', None)
+
+    # Remove from pdf_sessions if loaded
+    pdf_name = pdf.filename.replace('.pdf', '')
+    if pdf_name in pdf_sessions:
+        del pdf_sessions[pdf_name]
+
+    db.session.delete(pdf)
+    db.session.commit()
+    return redirect(url_for('pdf_history'))
+
+@app.route('/load_pdf_chat/<int:pdf_id>')
+@login_required
+def load_pdf_chat(pdf_id):
+    pdf = PDFHistory.query.get_or_404(pdf_id)
+    if pdf.user_id != current_user.id:
+        return redirect('/pdf_history')
+    session['current_pdf_id'] = pdf_id
+    return redirect('/chat')
+
+@app.route('/clear_chat', methods=['POST'])
+@login_required
+def clear_chat():
+    current_pdf_id = session.get('current_pdf_id')
+    if current_pdf_id:
+        ChatHistory.query.filter_by(
+            user_id=current_user.id,
+            pdf_id=current_pdf_id
+        ).delete()
+        db.session.commit()
+    return redirect('/chat')
+
+@app.route('/summarize_chat', methods=['POST'])
+@login_required
+def summarize_chat():
+    current_pdf_id = session.get('current_pdf_id')
+    db_chats = ChatHistory.query.filter_by(
+        user_id=current_user.id,
+        pdf_id=current_pdf_id
+    ).order_by(ChatHistory.timestamp).all() if current_pdf_id else []
+
+    if not db_chats:
+        return redirect('/chat')
+
+    convo = ""
+    for msg in db_chats:
+        role = "User" if msg.role == 'human' else "AI"
+        convo += f"{role}: {msg.content}\n\n"
+
+    messages = [
+        SystemMessage(content="""
+            Summarize this conversation concisely:
+            **Main Topics:** • topic
+            **Key Points:** • point
+            **Conclusions:** • conclusion
+        """),
+        HumanMessage(content=f"Summarize:\n\n{convo}")
+    ]
+    try:
+        response = llm.invoke(messages)
+        summary = markdown.markdown(response.content)
+    except Exception as e:
+        summary = f"<p class='text-red-500'>⚠ Error: {str(e)}</p>"
+
+    formatted_history = [{
+        'type': msg.role,
+        'content': markdown.markdown(msg.content) if msg.role == 'ai' else msg.content,
+        'time': msg.timestamp.strftime("%I:%M %p")
+    } for msg in db_chats]
+
+    return chat_render(
+        chat_history=formatted_history,
+        summary=summary,
+        resources=None,
+        followups=[]
+    )
+
+@app.route('/switch_session', methods=['POST'])
+@login_required
+def switch_session():
+    global active_session
+    session_name = request.form.get('session_name')
+    if session_name in pdf_sessions:
+        active_session = session_name
+    return redirect('/chat')
+
+import re as re_module
+
+@app.route('/essay_grading', methods=['GET', 'POST'])
+def essay_grading():
+    result = None
+    input_text = None
+    score = None
+    strengths = []
+    weaknesses = []
+    suggestions = []
+
+    if request.method == 'POST':
+        if request.form.get('essay_rubric', False):
+            global rubric_text
+            rubric_text = request.form.get('essay_rubric')
+           
+            return render_template('new_essay_grading.html')
+
+        elif 'essay_rubric' in request.form and not request.form.get('essay_rubric'):
+            return render_template('new_essay_rubric.html', error="Please enter a grading rubric.")
+
+        try:
+            uploaded_file = request.files.get('file')
+            if uploaded_file and uploaded_file.filename:
+                if not allowed_file(uploaded_file.filename):
+                    result = "<p style='color:red;'>⚠ Unsupported file type.</p>"
+                else:
+                    input_text = extract_text_from_file(uploaded_file)
+            else:
+                input_text = request.form.get('essay_text', '').strip()
+
+            if input_text:
+                result = _grade_essay(input_text)
+
+                # ✅ Parse score
+                score_match = re_module.search(r'(\d+(?:\.\d+)?)\s*/\s*10', result or '')
+                if score_match:
+                    score = float(score_match.group(1))
+
+                # ✅ Parse sections from markdown result
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(result or '', 'html.parser')
+                all_li = soup.find_all('li')
+
+                # Simple split by section headers
+                raw = result or ''
+                if 'STRENGTHS' in raw.upper():
+                    parts = re_module.split(r'(?i)strengths|weaknesses|suggestions', raw)
+                    strengths   = [li.get_text() for li in all_li[:3]]
+                    weaknesses  = [li.get_text() for li in all_li[3:6]]
+                    suggestions = [li.get_text() for li in all_li[6:]]
+
+                # ✅ Save to essay history
+                if current_user.is_authenticated and result and input_text:
+                    essay_record = EssayHistory(
+                        user_id=current_user.id,
+                        essay_text=input_text[:500],
+                        result=result
+                    )
+                    db.session.add(essay_record)
+                    db.session.commit()
+                    add_notification(current_user.id, "Essay graded successfully")
+
+        except Exception as e:
+            result = f"<p style='color:red;'>⚠ Error: {str(e)}</p>"
+
+    return render_template('new_essay_grading.html',
+                           result=result,
+                           input_text=input_text,
+                           score=score,
+                           strengths=strengths,
+                           weaknesses=weaknesses,
+                           suggestions=suggestions)
+
+@app.route('/essay_history')
+@login_required
+def essay_history():
+    essays = EssayHistory.query.filter_by(
+        user_id=current_user.id
+    ).order_by(EssayHistory.timestamp.desc()).all()
+    return render_template('essay_history.html', essays=essays)
+
+@app.route('/essay_rubric', methods=['GET', 'POST'])
+def essay_rubric():
+    return render_template('new_essay_rubric.html')
+
+
+# =====================
+# SHARED CHAT FUNCTIONALITY
+# =====================
+
+import uuid
+import datetime
+
+class SharedChat(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    share_id = db.Column(db.String(36), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    pdf_id = db.Column(db.Integer, db.ForeignKey('pdf_history.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now)
+
+from flask import request, redirect, url_for, flash
+from flask_login import login_required, current_user
+
+@app.route('/share_chat', methods=['POST'])
+@login_required
+def share_chat():
+    current_pdf_id = session.get('current_pdf_id')
+    
+    # ✅ Check if a PDF is loaded
+    if not current_pdf_id:
+        return chat_render(
+            chat_history=[],
+            resources=None,
+            followups=[],
+            summary=None,
+            error="Please upload and process a PDF before sharing."
+        )
+
+    existing = SharedChat.query.filter_by(
+        user_id=current_user.id,
+        pdf_id=current_pdf_id
+    ).first()
+
+    if existing:
+        share_url = f"http://127.0.0.1:5000/shared/{existing.share_id}"
+    else:
+        import uuid
+        share_id = str(uuid.uuid4())
+        shared = SharedChat(
+            share_id=share_id,
+            user_id=current_user.id,
+            pdf_id=current_pdf_id
+        )
+        db.session.add(shared)
+        db.session.commit()
+        share_url = f"http://127.0.0.1:5000/shared/{share_id}"
+
+    # ✅ Reload history for display
+    chat_history = ChatHistory.query.filter_by(
+        user_id=current_user.id,
+        pdf_id=current_pdf_id
+    ).order_by(ChatHistory.timestamp).all()
+
+    formatted_history = [{
+        'type': msg.role,
+        'content': markdown.markdown(msg.content) if msg.role == 'ai' else msg.content,
+        'time': msg.timestamp.strftime("%I:%M %p")
+    } for msg in chat_history]
+
+    return chat_render(
+        chat_history=formatted_history,
+        resources=None,
+        followups=[],
+        summary=None,
+        share_url=share_url
+    )
+
+@app.route('/shared/<share_id>')
+def view_shared_chat(share_id):
+
+    shared = SharedChat.query.filter_by(share_id=share_id).first_or_404()
+
+    chats = ChatHistory.query.filter_by(
+        pdf_id=shared.pdf_id
+    ).order_by(ChatHistory.timestamp).all()
+
+    pdf = PDFHistory.query.get(shared.pdf_id)
+    owner = User.query.get(shared.user_id)
+
+    formatted = []
+    for msg in chats:
+        formatted.append({
+            'type': msg.role,
+            'content': markdown.markdown(msg.content) if msg.role == 'ai' else msg.content,
+            'time': msg.timestamp.strftime("%I:%M %p")
+        })
+
+    return render_template(
+        'shared_chat.html',
+        chat_history=formatted,
+        pdf_name=pdf.filename if pdf else "Unknown",
+        shared_by=owner.username if owner else "Unknown"
+    )
+
+print("SHARE CLICKED")
+
+# =====================
+# CREATE DB AND RUN
+# =====================
+
+with app.app_context():
+    db.create_all()
+
+if __name__ == '__main__':
+    app.run(debug=True, threaded=True, use_reloader=False)

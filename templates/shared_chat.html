@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" id="html-root">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shared Chat | Chat Scholar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "background": "#031427","surface-tint": "#adc6ff","outline": "#8c909f",
+                    "secondary": "#d0bcff","primary-container": "#4d8eff","primary": "#adc6ff",
+                    "tertiary-container": "#00a572","on-secondary-container": "#c4abff",
+                    "on-primary": "#002e6a","surface-container-lowest": "#000f21",
+                    "surface-container-low": "#0b1c30","error": "#ffb4ab",
+                    "surface-container-high": "#1b2b3f","surface": "#031427","tertiary": "#4edea3",
+                    "surface-bright": "#2a3a4f","outline-variant": "#424754",
+                    "surface-container-highest": "#26364a","surface-container": "#102034",
+                    "secondary-container": "#571bc1","on-surface": "#d3e4fe",
+                    "on-surface-variant": "#c2c6d6","on-primary-container": "#00285d",
+                    "on-background": "#d3e4fe"
+                },
+                borderRadius: { DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px" },
+                fontFamily: { headline: ["Plus Jakarta Sans"], body: ["Inter"] }
+            }
+        }
+    }
+</script>
+
+<script>
+function toggleNotif(){
+    document.getElementById("notifBox")
+    .classList.toggle("hidden");
+}
+</script>
+
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #031427; color: #d3e4fe; }
+    .font-plus-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    /* Chat markdown styles */
+    .chat-box p  { margin-bottom: 8px; }
+    .chat-box ul { list-style: none; padding: 0; margin-bottom: 8px; }
+    .chat-box li { display: flex; gap: 10px; margin-bottom: 6px; font-size: 0.9rem; line-height: 1.6; }
+    .chat-box li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #4edea3; margin-top: 8px; flex-shrink: 0; }
+    .chat-box strong { color: #d3e4fe; font-weight: 700; }
+    .chat-box h2,.chat-box h3 { font-weight: 700; margin-bottom: 6px; }
+    .chat-box code { background: #26364a; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; }
+    /* Fade in animation */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up { animation: fadeUp 0.5s ease forwards; }
+    .fade-up:nth-child(2) { animation-delay: 0.1s; }
+    .fade-up:nth-child(3) { animation-delay: 0.2s; }
+    .fade-up:nth-child(4) { animation-delay: 0.3s; }
+    .fade-up:nth-child(5) { animation-delay: 0.4s; }
+</style>
+</head>
+
+<body class="bg-background text-on-background font-body selection:bg-primary/30 min-h-screen">
+
+<!-- ✅ Sidebar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/90 backdrop-blur-xl flex flex-col p-6 border-r border-slate-800/15 z-50">
+     <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+
+        <!-- Left: Shared by -->
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#adc6ff] to-[#4d8eff] flex items-center justify-center">
+                <span class="material-symbols-outlined text-slate-950 text-xl" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+            </div>
+            <p class="text-on-surface-variant font-medium text-sm">
+                Shared by
+                <span class="text-primary font-bold">{{ shared_by | default('a user') }}</span>
+                via Chat Scholar
+            </p>
+        </div>
+
+        <!-- Right: CTA -->
+        <a href="{{ url_for('signup') }}"
+            class="bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] text-slate-950 px-6 py-2 rounded-full font-bold text-sm hover:scale-[1.02] transition-transform shadow-lg shadow-primary/20">
+            Create your own AI chat
+        </a>
+    </div>
+</header>
+
+<!-- ✅ Main Content -->
+<main class="pt-28 pb-32 px-6 max-w-4xl mx-auto min-h-screen">
+
+    <!-- Document Header -->
+    <div class="mb-12 text-center fade-up">
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-highest rounded-full mb-4">
+            <span class="material-symbols-outlined text-primary text-sm">description</span>
+            <span class="text-xs font-bold text-on-surface-variant tracking-wider uppercase">Archived Conversation</span>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold font-plus-jakarta bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] bg-clip-text text-transparent leading-tight mb-4">
+            Chat about {{ pdf_name | default('a document') }}
+        </h1>
+        <p class="text-on-surface-variant font-medium text-sm">
+            Original Document: <span class="text-on-surface">{{ pdf_name | default('Unknown') }}</span>
+        </p>
+        <div class="flex items-center justify-center gap-4 mt-4 text-xs text-on-surface-variant">
+            <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">chat_bubble</span>
+                {{ chat_history | length }} messages
+            </span>
+            <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">schedule</span>
+                Read only
+            </span>
+        </div>
+    </div>
+
+    <!-- ✅ Chat Stream (Read Only) -->
+    <div class="space-y-8">
+
+        {% if chat_history %}
+        {% for message in chat_history %}
+
+        {% if message.type == 'human' %}
+        <!-- Human Message -->
+        <div class="flex flex-col items-end fade-up">
+            <div class="max-w-[85%] bg-gradient-to-br from-[#adc6ff] to-[#4d8eff] text-slate-950 p-6 rounded-3xl rounded-tr-none shadow-xl">
+                <p class="text-base font-medium leading-relaxed">{{ message.content }}</p>
+            </div>
+            <div class="flex items-center mt-2 gap-2 text-on-surface-variant/60">
+                <span class="text-xs font-semibold">{{ shared_by | default('User') }}</span>
+                <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">person</span>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- AI Message -->
+        <div class="flex flex-col items-start fade-up">
+            <div class="max-w-[90%] bg-surface-container-low p-8 rounded-3xl rounded-tl-none relative">
+                <!-- Subtle glow -->
+                <div class="absolute -inset-1 bg-gradient-to-r from-primary/5 to-secondary/5 blur-xl opacity-50 -z-10 rounded-3xl"></div>
+
+                <!-- AI label -->
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-6 h-6 rounded-full bg-surface-bright flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-xs" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                    </div>
+                    <span class="text-xs font-bold text-primary tracking-widest uppercase">Chat Scholar AI</span>
+                </div>
+
+                <!-- Message content -->
+                <div class="chat-box text-on-surface leading-relaxed text-sm">
+                    {{ message.content | safe }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% endfor %}
+
+        {% else %}
+        <!-- Empty state -->
+        <div class="text-center py-16">
+            <span class="material-symbols-outlined text-6xl text-slate-600 mb-4 block">chat_bubble_outline</span>
+            <p class="text-on-surface-variant">This shared chat has no messages yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ✅ Divider -->
+    <div class="my-20 flex justify-center items-center gap-4 opacity-20">
+        <div class="h-[1px] w-24 bg-gradient-to-r from-transparent to-on-surface"></div>
+        <span class="material-symbols-outlined">auto_stories</span>
+        <div class="h-[1px] w-24 bg-gradient-to-l from-transparent to-on-surface"></div>
+    </div>
+
+    <!-- ✅ CTA Section -->
+    <div class="bg-surface-container-low rounded-3xl p-10 text-center border border-outline-variant/10 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-secondary/5 rounded-full blur-3xl -ml-32 -mb-32"></div>
+
+        <div class="relative z-10">
+            <h2 class="text-2xl font-bold font-plus-jakarta mb-4">Inspired by this conversation?</h2>
+            <p class="text-on-surface-variant max-w-lg mx-auto mb-8 text-sm leading-relaxed">
+                Upload your own PDFs, essays, or research papers and experience the future of educational intelligence with Chat Scholar.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="{{ url_for('signup') }}"
+                    class="bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] text-slate-950 px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform shadow-lg shadow-primary/20">
+                    Start Chatting Free
+                </a>
+                <a href="{{ url_for('home') }}"
+                    class="text-primary font-bold px-8 py-3 rounded-full border-2 border-primary/20 hover:bg-primary/5 transition-colors">
+                    Learn How it Works
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ✅ Footer Watermark -->
+<footer class="py-12 border-t border-outline-variant/10">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col items-center justify-center gap-4">
+        <div class="flex items-center gap-2 text-on-surface-variant">
+            <span class="material-symbols-outlined text-sm">bolt</span>
+            <p class="text-sm font-medium tracking-wide">
+                Powered by <span class="font-bold text-on-surface">Chat Scholar</span>
+            </p>
+        </div>
+        <div class="flex gap-6 text-xs text-on-surface-variant/50 font-medium">
+            <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+            <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+            <a class="hover:text-primary transition-colors" href="#">Report Abuse</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

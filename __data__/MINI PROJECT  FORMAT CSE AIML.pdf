@@ -1,0 +1,278 @@
+PROJECT TITLE 
+                   
+ 
+A Mini Project Report 
+Submitted in Partial fulfillment for the award of 
+  Bachelor of Technology in CSE-AIML 
+ 
+ 
+Submitted to 
+RAJIV GANDHI PROUDYOGIKI VISHWAVIDYALAYA 
+BHOPAL (M.P) 
+ 
+ 
+ 
+ 
+MINI PROJECT REPORT 
+Submitted by 
+Student Name 1[Roll No.]                                       Student Name 2[Roll No.]                          
+Student Name 3[Roll No.]                                       
+Under the supervision of 
+Guide Name 
+Designation 
+ 
+                                                           
+ 
+ 
+ 
+ 
+ 
+Department of CSE-AIML 
+Lakshmi Narain College of Technology, Bhopal (M.P.) 
+ 
+Session  
+ 2023-24 
+ 
+ 
+ 
+ 
+                                     
+
+   
+  LAKSHMI NARAIN COLLEGE OF TECHNOLOGY, BHOPAL 
+DEPARTMENT OF CSE-AIML 
+ 
+ 
+ 
+ 
+ 
+CERTIFICATE 
+ 
+This is to certify that the work embodied in this project work entitled ”Project 
+Title” has been satisfactorily completed by the Student Name 1 (Roll No.). It is a 
+bonafide piece of work, carried out under the guidance in Department of CSE-
+AIML, Lakshmi Narain College of Technology, Bhopal for the partial 
+fulfillment of the Bachelor of Technology during the academic year 2023-2024. 
+                                     
+ 
+Guide Name 
+Designation                                                                          
+(GUIDE) 
+ 
+ 
+Approved By 
+ 
+ 
+Dr. Tripti Saxena 
+ 
+Professor  & Head 
+Department of CSE-AIML 
+ 
+ 
+ 
+                                                       
+                                                                                                                           
+ 
+
+  LAKSHMI NARAIN COLLEGE OF TECHNOLOGY, BHOPAL 
+DEPARTMENT OF CSE-AIML 
+ 
+ 
+ACKNOWLEDGEMENT 
+ 
+ 
+ 
+We express our deep sense of gratitude to Prof. …………………….  
+(Guide) department of CSE-AIML  L.N.C.T., Bhopal.  Whose kindness valuable 
+guidance and timely help encouraged me to complete this project.   
+ 
+ 
+A special thank goes to Dr. Tripti Saxena (HOD) who helped me in 
+completing this project work.  He exchanged his interesting ideas & thoughts 
+which made this project work successful.   
+ 
+ 
+We would also thank our institution and all the faculty members without 
+whom this project work would have been a distant reality.  
+ 
+ 
+Signature 
+ 
+ 
+ 
+Student Name 1[Roll No.]  
+ 
+ 
+ 
+Student Name 2[Roll No.] 
+ 
+ 
+ 
+Student Name 3[Roll No.] 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+INDEX 
+                   
+ 
+ 
+S.NO. 
+TOPICS 
+PAGES 
+ 
+1.  
+Problem Domain Description 
+1-2 
+2.  
+Literature Survey 
+10-12 
+3.  
+Mini objective & scope of project                                    
+2-3 
+4.  
+Problem Analysis and requirement specification 
+8-10 
+5.  
+Detailed Design(Modeling  and ERD/DFD) 
+10-12 
+6.  
+Hardware/Software platform environment                       
+2-3 
+7.  
+Snapshots of  Input  &  Output  
+5-6 
+8.  
+Coding                                        
+10-20 
+9.  
+Project limitation and Future scope                                  
+2-3 
+10. 
+References 
+2-3 
+ 
+Total                                                  Approx.   20-40   Pages     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+Instruction for Submission of Project Report  
+II Year CSE(AIML) 
+The Project Report should be in Spiral Binding with following 
+instructions  
+The front page & certificate should be Glossy and colored 
+ 
+ 
+ 
+1. Chapter Name - Number  
+: 
+14 
+(Times New Roman & All Capital Letters) 
+2. Heading  
+ 
+ 
+: 
+16 
+(Times New Roman & First Latter Capital) 
+3. Sub Heading  
+ 
+: 
+14 
+(Times New Roman &  FLC) 
+4. Matter  
+ 
+ 
+: 
+12 
+(Times New Roman ) 
+5. The report should be indexed and pages must be numbered all the figures and diagrams 
+must be numbered and labeled. 
+ 
+ 
+ 
+Note:- The title should not be very short. It must be explanatory which 
+should include, Problem to be solved, Solution of the given problem (in 
+terms of some Algorithm/Design/Technique used in solving it) and 
+language/platform used for developing the solution for the identified 
+problem like python , java etc. 
+ Example:- 
+1. Web Based Graphical Password Authentication System using JAVA 
+2. Identification and Matching of Robust-Face Name Graph for Movie 
+Character 
+3. Controlling of Topology in Ad hoc Networks by Using Cooperative 
+Communications 
+4. An SSL Back End Forwarding Scheme of Clusters Based On Web Servers 
+5. Motion Extraction Techniques Based Identifying the Level of Perception 
+Power from Video 
+6. Approximate and Efficient Processing of Query in Peer-to-Peer Networks 
+ 
+ 
+ 
+Note: Next page gives Template for making project file 
+
+ 
+ 
+ 
+CHAPTER 1 
+INTRODUCTION 
+ 
+ 
+ 1.1. Heading 
+This template, modified in MS Word 2007 and saved as a “Word 97-2003 Document” for the 
+PC, provides authors with most of the formatting specifications needed for preparing electronic 
+versions of their papers. 
+ 
+1.1.1 Sub Heading 
+The template is used to format your paper and style the text. All margins, column widths, line 
+spaces, and text fonts are prescribed; please do not alter them. You may note peculiarities. 
+ 
+A) Sub Sub Heading 
+ 
+Positioning Figures and Tables: Place figures and tables at the top and bottom of columns. 
+Avoid placing them in the middle of columns. Large figures and tables may span across both 
+columns. Figure captions should be below the figures; table heads should appear above the 
+tables. Insert figures and tables after they are cited in the text. Use the abbreviation “Fig. 1”, 
+even at the beginning  
+TABLE 1.1.  
+TABLE TYPE STYLES 
+Table 
+Head 
+Table Column Head 
+Table column subhead 
+Subhead 
+Subhead 
+copy 
+More table copya 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+Fig 1. 1. Example of a figure caption. (figure caption)  
+

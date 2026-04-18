@@ -1,0 +1,16 @@
+AgriAid – Potential Challenges & Overcoming Strategies
+ 
+<b>Potential Challenges</b>
+<b>Overcoming Strategies</b>
+■ Limited Internet Connectivity in Rural Areas
+■ Use lightweight mobile app, offline caching, and SMS/IVR-based updates for farmers with weak networks.
+■ Data Accuracy & Reliability (Weather, Market Prices)
+■ Integrate with trusted APIs (IMD, govt. mandi portals), apply cross-verification and AI-based data cleaning.
+■ Language & Literacy Barriers
+■ Deploy Hindi/Regional voice chatbot, simple icon-based UI, and multilingual support.
+■ Farmers’ Digital Adoption
+■ Conduct training workshops, provide step-by-step tutorials, and build a farmer community support system.
+■ Scalability with Growing Users
+■ Host on cloud platforms (AWS, GCP, Azure), implement modular microservices for flexibility.
+■ Data Privacy & Security
+■ Ensure data encryption (SSL), role-based access, and comply with government data policies.

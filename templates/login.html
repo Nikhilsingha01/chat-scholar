@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" id="html-root">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chat Scholar — Sign In</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "on-tertiary": "#003824",
+                    "on-primary-fixed-variant": "#004395",
+                    "on-tertiary-container": "#00311f",
+                    "on-error": "#690005",
+                    "on-secondary": "#3c0091",
+                    "background": "#031427",
+                    "error-container": "#93000a",
+                    "surface-tint": "#adc6ff",
+                    "outline": "#8c909f",
+                    "secondary": "#d0bcff",
+                    "primary-container": "#4d8eff",
+                    "surface-dim": "#031427",
+                    "primary": "#adc6ff",
+                    "primary-fixed": "#d8e2ff",
+                    "tertiary-container": "#00a572",
+                    "on-secondary-container": "#c4abff",
+                    "on-primary": "#002e6a",
+                    "surface-container-lowest": "#000f21",
+                    "secondary-fixed-dim": "#d0bcff",
+                    "secondary-fixed": "#e9ddff",
+                    "surface-container-low": "#0b1c30",
+                    "error": "#ffb4ab",
+                    "surface-container-high": "#1b2b3f",
+                    "surface": "#031427",
+                    "tertiary-fixed": "#6ffbbe",
+                    "tertiary": "#4edea3",
+                    "inverse-primary": "#005ac2",
+                    "surface-bright": "#2a3a4f",
+                    "outline-variant": "#424754",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "inverse-on-surface": "#213145",
+                    "primary-fixed-dim": "#adc6ff",
+                    "surface-container-highest": "#26364a",
+                    "surface-container": "#102034",
+                    "secondary-container": "#571bc1",
+                    "on-surface": "#d3e4fe",
+                    "on-surface-variant": "#c2c6d6",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#5516be",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "on-primary-container": "#00285d",
+                    "inverse-surface": "#d3e4fe",
+                    "surface-variant": "#26364a",
+                    "on-tertiary-fixed": "#002113",
+                    "on-secondary-fixed": "#23005c",
+                    "on-background": "#d3e4fe",
+                    "on-primary-fixed": "#001a42"
+                },
+                borderRadius: {
+                    DEFAULT: "1rem",
+                    lg: "2rem",
+                    xl: "3rem",
+                    full: "9999px"
+                },
+                fontFamily: {
+                    headline: ["Plus Jakarta Sans"],
+                    body: ["Inter"],
+                    label: ["Inter"]
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .editorial-gradient {
+        background: linear-gradient(135deg, #031427 0%, #0b1c30 100%);
+    }
+    .signature-gradient {
+        background: linear-gradient(to right, #adc6ff, #4d8eff);
+    }
+    .glass-panel {
+        background: rgba(42, 58, 79, 0.4);
+        backdrop-filter: blur(20px);
+    }
+    .input-glow:focus-within {
+        box-shadow: 0 0 0 2px rgba(173, 198, 255, 0.2);
+    }
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+</style>
+</head>
+
+<body class="bg-background font-body text-on-surface overflow-hidden">
+<main class="flex h-screen w-full">
+
+    <!-- ✅ Left Panel: Brand & Visual -->
+    <section class="hidden lg:flex w-1/2 relative flex-col justify-between p-16 editorial-gradient">
+        <!-- Decorative Background -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-[-10%] right-[-10%] w-full h-full rounded-full opacity-20 blur-[120px] signature-gradient"></div>
+            <div class="absolute bottom-[-20%] left-[-10%] w-[80%] h-[80%] rounded-full opacity-10 blur-[100px] bg-secondary"></div>
+        </div>
+
+        <!-- Logo -->
+        <div class="relative z-10 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl signature-gradient flex items-center justify-center">
+                <span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+            </div>
+            <span class="font-headline font-extrabold text-2xl tracking-tight signature-gradient bg-clip-text text-transparent">Chat Scholar</span>
+        </div>
+
+        <!-- Main Content -->
+        <div class="relative z-10 max-w-md">
+            <h1 class="font-headline text-5xl font-bold leading-tight mb-6">
+                Master any document with AI precision.
+            </h1>
+            <p class="text-on-surface-variant text-lg leading-relaxed">
+                Join thousands of students and researchers using editorial intelligence to transform PDFs into actionable knowledge.
+            </p>
+        </div>
+
+        <!-- Stats -->
+        <div class="relative z-10 flex gap-12">
+            <div>
+                <p class="font-headline text-2xl font-bold text-primary">2.4M+</p>
+                <p class="text-xs uppercase tracking-widest text-on-surface-variant font-medium">Pages Analyzed</p>
+            </div>
+            <div>
+                <p class="font-headline text-2xl font-bold text-primary">98%</p>
+                <p class="text-xs uppercase tracking-widest text-on-surface-variant font-medium">Accuracy Rate</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ✅ Right Panel: Login Form -->
+    <section class="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 bg-surface-container-low overflow-y-auto">
+        <div class="w-full max-w-[440px] flex flex-col">
+
+            <!-- Mobile Logo -->
+            <div class="lg:hidden flex items-center gap-3 mb-12">
+                <div class="w-8 h-8 rounded-lg signature-gradient flex items-center justify-center">
+                    <span class="material-symbols-outlined text-xs text-on-primary-container" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+                </div>
+                <span class="font-headline font-bold text-xl signature-gradient bg-clip-text text-transparent">Chat Scholar</span>
+            </div>
+
+            <!-- Header -->
+            <div class="mb-10">
+                <h2 class="font-headline text-3xl font-bold mb-2">Welcome back</h2>
+                <p class="text-on-surface-variant">Sign in to continue to Chat Scholar</p>
+            </div>
+
+            <!-- ✅ Error from Flask -->
+            {% if error %}
+            <div class="mb-6 flex items-center gap-2 bg-error/10 border border-error/30 rounded-xl px-4 py-3">
+                <span class="material-symbols-outlined text-error text-[18px]">error</span>
+                <p class="text-error text-sm">{{ error }}</p>
+            </div>
+            {% endif %}
+
+            <!-- ✅ Login Form -->
+            <form class="space-y-6" method="post" action="/login">
+
+                <!-- Email Field -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-on-surface-variant ml-1" for="email">Email</label>
+                    <div class="relative group input-glow rounded-xl">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline">
+                            <span class="material-symbols-outlined text-[20px]">mail</span>
+                        </div>
+                        <input
+                            class="w-full bg-surface-container-highest border-none rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder-outline focus:ring-0 transition-all duration-200"
+                            id="email" name="email"
+                            placeholder="name@university.edu"
+                            type="email" required
+                            value="{{ request.form.get('email', '') }}"/>
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center px-1">
+                        <label class="block text-sm font-medium text-on-surface-variant" for="password">Password</label>
+                        <a class="text-sm font-semibold text-primary hover:text-primary-container transition-colors" href="#">
+                            Forgot password?
+                        </a>
+                    </div>
+                    <div class="relative group input-glow rounded-xl">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline">
+                            <span class="material-symbols-outlined text-[20px]">lock</span>
+                        </div>
+                        <input
+                            class="w-full bg-surface-container-highest border-2 rounded-xl py-4 pl-12 pr-12 text-on-surface placeholder-outline focus:ring-0 transition-all duration-200
+                            {% if error %} border-error/30 focus:border-error {% else %} border-transparent {% endif %}"
+                            id="password" name="password"
+                            placeholder="••••••••"
+                            type="password" required/>
+                        <!-- Show/Hide toggle -->
+                        <button class="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-on-surface transition-colors"
+                            type="button" onclick="togglePassword()">
+                            <span class="material-symbols-outlined text-[20px]" id="pw-eye">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button class="w-full signature-gradient text-on-primary-container font-headline font-bold py-4 rounded-full shadow-lg shadow-primary-container/10 hover:opacity-90 transition-all active:scale-[0.98] mt-4"
+                    type="submit">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="relative my-10">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-outline-variant/30"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="bg-surface-container-low px-4 text-on-surface-variant">or continue with</span>
+                </div>
+            </div>
+
+            <!-- Google OAuth Button -->
+           <!-- ✅ Replace your entire Google button block with this -->
+            <a href="{{ url_for('google.login') }}"
+                class="w-full bg-surface-container-highest border border-outline-variant/20 py-4 rounded-full flex items-center justify-center gap-3 hover:bg-surface-bright transition-all active:scale-[0.98]">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                <span class="text-on-surface font-medium">Sign in with Google</span>
+            </a>
+
+            <!-- Signup Link -->
+            <p class="mt-10 text-center text-on-surface-variant">
+                Don't have an account?
+                <a class="text-primary font-semibold hover:underline decoration-2 underline-offset-4 ml-1"
+                    href="{{ url_for('signup') }}">Sign up</a>
+            </p>
+
+        </div>
+    </section>
+</main>
+
+<script>
+    // ✅ Show/hide password
+    function togglePassword() {
+        const input = document.getElementById('password');
+        const eye = document.getElementById('pw-eye');
+        if (input.type === 'password') {
+            input.type = 'text';
+            eye.textContent = 'visibility_off';
+        } else {
+            input.type = 'password';
+            eye.textContent = 'visibility';
+        }
+    }
+</script>
+
+</body>
+</html>

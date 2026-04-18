@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" id="html-root">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chat Scholar — PDF Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "background": "#031427","surface-tint": "#adc6ff","outline": "#8c909f",
+                    "secondary": "#d0bcff","primary-container": "#4d8eff","primary": "#adc6ff",
+                    "tertiary-container": "#00a572","on-secondary-container": "#c4abff",
+                    "on-primary": "#002e6a","surface-container-lowest": "#000f21",
+                    "surface-container-low": "#0b1c30","error": "#ffb4ab",
+                    "surface-container-high": "#1b2b3f","surface": "#031427","tertiary": "#4edea3",
+                    "surface-bright": "#2a3a4f","outline-variant": "#424754",
+                    "surface-container-highest": "#26364a","surface-container": "#102034",
+                    "secondary-container": "#571bc1","on-surface": "#d3e4fe",
+                    "on-surface-variant": "#c2c6d6","on-primary-container": "#00285d",
+                    "on-background": "#d3e4fe"
+                },
+                borderRadius: { DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px" },
+                fontFamily: { headline: ["Plus Jakarta Sans"], body: ["Inter"] }
+            }
+        }
+    }
+</script>
+
+<script>
+function toggleNotif(){
+    document.getElementById("notifBox")
+    .classList.toggle("hidden");
+}
+</script>
+
+<style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+    body { font-family: 'Inter', sans-serif; background-color: #031427; }
+    .font-plus-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .bg-primary-gradient { background: linear-gradient(135deg, #adc6ff 0%, #4d8eff 100%); }
+    .bg-human-gradient   { background: linear-gradient(135deg, #4d8eff 0%, #571bc1 50%, #4edea3 100%); }
+    /* Chat box markdown styles */
+    .chat-box p  { margin-bottom: 8px; }
+    .chat-box ul { list-style: none; padding: 0; margin-bottom: 8px; }
+    .chat-box li { display: flex; gap: 12px; margin-bottom: 8px; font-size: 0.875rem; line-height: 1.6; }
+    .chat-box li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #4edea3; margin-top: 8px; flex-shrink: 0; }
+    .chat-box strong { color: #d3e4fe; font-weight: 700; }
+    .chat-box h1,.chat-box h2,.chat-box h3 { font-weight: 700; margin-bottom: 6px; color: #d3e4fe; }
+    .chat-box code { background: #26364a; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; }
+    /* Search highlight */
+    .highlight { background: rgba(173,198,255,0.3); border-radius: 3px; padding: 0 2px; }
+    /* Typing dots */
+    @keyframes bounce { 0%,80%,100%{transform:scale(0.7);opacity:0.5} 40%{transform:scale(1.2);opacity:1} }
+    .typing-dot { width:6px; height:6px; border-radius:50%; background:#adc6ff; display:inline-block; animation:bounce 1.2s infinite ease-in-out; }
+    .typing-dot:nth-child(2){animation-delay:0.15s}
+    .typing-dot:nth-child(3){animation-delay:0.3s}
+    /* Scrollbar */
+    #chat-messages::-webkit-scrollbar { width: 4px; }
+    #chat-messages::-webkit-scrollbar-track { background: transparent; }
+    #chat-messages::-webkit-scrollbar-thumb { background: #424754; border-radius: 4px; }
+</style>
+</head>
+
+<body class="bg-background text-on-background font-body selection:bg-primary/30 min-h-screen">
+
+<!-- ✅ Sidebar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/90 backdrop-blur-xl flex flex-col p-6 border-r border-slate-800/15 z-50">
+     <div class="mb-10 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-primary-gradient flex items-center justify-center">
+            <span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">school</span>
+        </div>
+        <div class="mb-10">
+        <h1 class="text-xl font-bold bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] bg-clip-text text-transparent font-plus-jakarta">
+            Chat Scholar
+        </h1>
+        <p class="text-[10px] uppercase tracking-widest text-slate-500 font-medium mt-1">
+            Educational AI
+        </p>
+    </div>
+    </div>
+
+    <nav class="flex-1 space-y-2">
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 hover:bg-slate-800/50 transition-colors rounded-full"
+            href="{{ url_for('home') }}">
+            <span class="material-symbols-outlined">home</span>
+            <span class="font-plus-jakarta text-sm font-medium">Home</span>
+        </a>
+        <!-- Active: PDF Chat -->
+        <a class="flex items-center gap-3 bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] text-slate-950 rounded-full px-4 py-2 font-bold"
+            href="{{ url_for('pdf_chat') }}">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+            <span class="font-plus-jakarta text-sm font-medium">PDF Chat</span>
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 hover:bg-slate-800/50 transition-colors rounded-full"
+            href="{{ url_for('essay_rubric') }}">
+            <span class="material-symbols-outlined">auto_stories</span>
+            <span class="font-plus-jakarta text-sm font-medium">Essay Grading</span>
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 hover:bg-slate-800/50 transition-colors rounded-full"
+            href="{{ url_for('pdf_history') }}">
+            <span class="material-symbols-outlined">history</span>
+            <span class="font-plus-jakarta text-sm font-medium">PDF History</span>
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 hover:bg-slate-800/50 transition-colors rounded-full"
+            href="{{ url_for('essay_history') }}">
+            <span class="material-symbols-outlined">description</span>
+            <span class="font-plus-jakarta text-sm font-medium">Essay History</span>
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5"
+           href="{{ url_for('profile') }}">
+            <span class="material-symbols-outlined text-xl">person</span>
+            <span class="text-sm font-medium">Profile</span>
+        </a>
+
+        <!-- PDF Session switcher in sidebar -->
+        {% if sessions %}
+        <div class="pt-4 border-t border-slate-800/30 mt-4">
+            <p class="text-[10px] uppercase tracking-widest text-slate-500 font-medium px-4 mb-2">Active Documents</p>
+            {% for s in sessions %}
+            <form action="/switch_session" method="post">
+                <input type="hidden" name="session_name" value="{{ s }}"/>
+                <button type="submit"
+                    class="w-full flex items-center gap-3 px-4 py-2 text-left rounded-full transition-all text-sm
+                    {% if s == active %} text-primary font-semibold bg-primary/10 {% else %} text-slate-400 hover:text-white hover:bg-slate-800/50 {% endif %}">
+                    <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+                    <span class="truncate">{{ s }}</span>
+                </button>
+            </form>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </nav>
+
+    <div class="mt-auto p-6 border-t border-white/10">
+
+        <a href="{{ url_for('profile') }}"
+           class="flex items-center gap-3 mb-6">
+
+            <img src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}"
+                 class="w-12 h-12 rounded-full object-cover">
+
+            <div>
+                <p class="text-white text-sm font-semibold">
+                    {{ current_user.full_name }}
+                </p>
+
+                <p class="text-slate-400 text-xs">
+                    {{ current_user.email }}
+                </p>
+            </div>
+
+        </a>
+
+       <div class="flex justify-center">
+            <a href="{{ url_for('logout') }}"
+               class="flex items-center gap-2 text-slate-400 hover:text-white transition">
+
+                <span class="material-symbols-outlined">logout</span>
+                <span>Logout</span>
+
+            </a>
+        </div>
+
+    </div>
+</aside>
+
+<!-- ✅ Top Header with doc name -->
+<header class="fixed top-0 right-0 left-[280px] h-16 bg-slate-950/80 backdrop-blur-[20px] flex items-center justify-between px-8 z-40 border-b border-slate-800/15">
+    <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/20">
+            <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">picture_as_pdf</span>
+        </div>
+        <div>
+            <p class="font-plus-jakarta font-bold text-on-surface text-sm">
+                {% if active %}{{ active }}.pdf{% else %}No document selected{% endif %}
+            </p>
+            <p class="text-[10px] uppercase tracking-widest text-slate-500">
+                {% if active %}Document Analysis Active{% else %}Upload a PDF to begin{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <!-- Share -->
+        <form action="/share_chat" method="post" class="inline">
+            <button type="submit"
+                class="flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant/20 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all text-sm font-medium">
+                <span class="material-symbols-outlined text-sm">share</span>
+                Share
+            </button>
+        </form>
+        <!-- Export -->
+        <button onclick="exportChat()"
+            class="flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant/20 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all text-sm font-medium">
+            <span class="material-symbols-outlined text-sm">download</span>
+            Export
+        </button>
+        <!-- Summarize -->
+        <form action="/summarize_chat" method="post" class="inline">
+            <button type="submit"
+                class="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-gradient text-on-primary-container font-bold text-sm hover:opacity-90 transition-all">
+                <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">summarize</span>
+                Summarize
+            </button>
+        </form>
+        <!-- Dark mode -->
+        <button onclick="toggleDark()" id="dark-toggle" class="text-slate-400 hover:text-blue-300 ml-2">
+            <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+        </button>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('profile') }}">
+            <img
+            src="{{ url_for('static', filename='uploads/' + (current_user.profile_image or 'default.png')) }}"
+            class="w-10 h-10 rounded-full object-cover border-2 border-blue-400 hover:scale-105 transition cursor-pointer">
+        </a>
+        {% endif %}
+    </div>
+</header>
+
+<!-- ✅ Main Chat Area -->
+<main class="ml-[280px] pt-16 pb-36 min-h-screen bg-surface flex flex-col">
+
+    <!-- Search Bar -->
+    <div class="sticky top-16 z-30 bg-surface/80 backdrop-blur px-8 py-4 border-b border-slate-800/10">
+        <div class="max-w-4xl mx-auto relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+            <input id="search-input" type="text"
+                placeholder="Search in chat..."
+                class="w-full bg-surface-container-highest/50 border border-outline-variant/20 rounded-full py-2.5 pl-11 pr-12 text-on-surface placeholder:text-outline/50 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none transition-all"
+                oninput="searchChat(this.value)"/>
+            <button onclick="clearSearch()" class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface text-xs font-medium">
+                Clear
+            </button>
+        </div>
+    </div>
+
+    <!-- ✅ Error message -->
+    {% if error %}
+    <div class="max-w-4xl mx-auto w-full px-8 mt-4">
+        <div class="flex items-center gap-3 bg-error/10 border border-error/20 rounded-xl px-5 py-3">
+            <span class="material-symbols-outlined text-error text-sm">error</span>
+            <p class="text-error text-sm font-medium">{{ error }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ✅ Share URL display -->
+    {% if share_url %}
+    <div class="max-w-4xl mx-auto w-full px-8 mt-4">
+        <div class="flex items-center gap-3 bg-tertiary/10 border border-tertiary/20 rounded-xl px-5 py-3">
+            <span class="material-symbols-outlined text-tertiary text-sm">link</span>
+            <input type="text" value="{{ share_url }}" readonly
+                class="flex-1 bg-transparent text-tertiary text-sm focus:outline-none"/>
+            <button onclick="navigator.clipboard.writeText('{{ share_url }}').then(()=>this.textContent='Copied!')"
+                class="text-xs font-bold text-tertiary hover:underline">Copy</button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ✅ Chat Messages -->
+    <div id="chat-messages" class="flex-1 overflow-y-auto px-8 py-6 space-y-8 max-w-4xl mx-auto w-full">
+
+        {% if chat_history %}
+            {% for message in chat_history %}
+
+            {% if message.type == 'human' %}
+            <!-- Human Message -->
+            <div class="flex items-start gap-4 justify-end">
+                <div class="flex flex-col gap-1 items-end max-w-[75%]">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] text-outline">{{ message.time }}</span>
+                        <span class="text-[10px] font-bold text-outline tracking-widest uppercase">You</span>
+                    </div>
+                    <div class="bg-human-gradient p-5 rounded-3xl rounded-tr-none text-white shadow-xl">
+                        <p class="font-medium leading-relaxed">{{ message.content }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- AI Message -->
+            <div class="flex items-start gap-4 group">
+                <div class="w-9 h-9 rounded-full bg-primary-gradient flex items-center justify-center flex-shrink-0 mt-1 shadow-md shadow-primary/20">
+                    <span class="material-symbols-outlined text-on-primary-container text-sm" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                </div>
+                <div class="flex flex-col gap-2 max-w-[85%]">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-bold text-primary tracking-widest uppercase">AI Scholar</span>
+                        <span class="text-[10px] text-outline">{{ message.time }}</span>
+                    </div>
+                    <div class="bg-surface-container-low p-6 rounded-2xl rounded-tl-none border border-outline-variant/10 relative message-content">
+                        <div class="chat-box text-on-surface leading-relaxed text-sm">
+                            {{ message.content | safe }}
+                        </div>
+                        <!-- Hover action buttons -->
+                        <div class="absolute -right-12 top-0 opacity-0 group-hover:opacity-100 flex flex-col gap-2 transition-opacity">
+                            <button onclick="copyMessage(this)"
+                                class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center hover:text-primary transition-colors"
+                                title="Copy">
+                                <span class="material-symbols-outlined text-sm">content_copy</span>
+                            </button>
+                            <button onclick="speakMessage(this)"
+                                class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center hover:text-primary transition-colors"
+                                title="Read aloud">
+                                <span class="material-symbols-outlined text-sm" id="speak-icon-{{ loop.index }}">volume_up</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% endfor %}
+
+        {% else %}
+        <!-- Empty state -->
+        <div class="flex flex-col items-center justify-center h-[50vh] text-center">
+            <div class="w-20 h-20 rounded-2xl bg-surface-container-low flex items-center justify-center mb-6 border border-outline-variant/10">
+                <span class="material-symbols-outlined text-4xl text-slate-600" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+            </div>
+            <h3 class="font-plus-jakarta font-bold text-on-surface text-xl mb-2">Start a conversation</h3>
+            <p class="text-on-surface-variant text-sm max-w-sm">
+                {% if active %}
+                    Ask any question about <strong>{{ active }}</strong>
+                {% else %}
+                    Upload a PDF first, then come back to chat
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Typing indicator -->
+        <div id="typing-indicator" class="hidden flex items-center gap-3 py-2">
+            <div class="w-9 h-9 rounded-full bg-surface-container-highest flex items-center justify-center">
+                <span class="material-symbols-outlined text-outline text-sm">smart_toy</span>
+            </div>
+            <div class="bg-surface-container-low px-5 py-3 rounded-2xl rounded-tl-none border border-outline-variant/10 flex items-center gap-2">
+                <span class="text-[10px] font-bold text-outline tracking-widest uppercase mr-1">AI is thinking</span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Bottom cards: Resources, Followups, Summary -->
+    {% if resources or followups or summary %}
+    <div class="max-w-4xl mx-auto w-full px-8 pb-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            {% if resources %}
+            <div class="bg-surface-container-low p-5 rounded-2xl border border-outline-variant/10 flex flex-col gap-3 resources-box">
+                <div class="flex items-center gap-2 text-tertiary">
+                    <span class="material-symbols-outlined text-lg">verified</span>
+                    <span class="text-xs font-bold uppercase tracking-widest">Verified Resources</span>
+                </div>
+                <div class="text-xs text-on-surface/70 chat-box">{{ resources | safe }}</div>
+            </div>
+            {% endif %}
+
+            {% if followups %}
+            <div class="bg-surface-container-low p-5 rounded-2xl border border-outline-variant/10 flex flex-col gap-3">
+                <div class="flex items-center gap-2 text-secondary">
+                    <span class="material-symbols-outlined text-lg">quiz</span>
+                    <span class="text-xs font-bold uppercase tracking-widest">Follow-up Questions</span>
+                </div>
+                <div class="flex flex-col gap-2">
+                    {% for q in followups %}
+                    <form action="/chat" method="post">
+                        <input type="hidden" name="user_question" value="{{ q }}"/>
+                        <button type="submit"
+                            class="w-full text-left text-xs text-on-surface/70 hover:text-primary transition-colors leading-relaxed">
+                            → {{ q }}
+                        </button>
+                    </form>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if summary %}
+            <div class="bg-surface-container-low p-5 rounded-2xl border border-outline-variant/10 flex flex-col gap-3">
+                <div class="flex items-center gap-2 text-primary">
+                    <span class="material-symbols-outlined text-lg">auto_awesome</span>
+                    <span class="text-xs font-bold uppercase tracking-widest">Chat Summary</span>
+                </div>
+                <div class="text-xs text-on-surface/70 chat-box leading-relaxed">{{ summary | safe }}</div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Clear chat -->
+    {% if chat_history %}
+    <div class="max-w-4xl mx-auto w-full px-8 pb-2 flex justify-end">
+        <form action="/clear_chat" method="post">
+            <button type="submit"
+                onclick="return confirm('Clear all chat history?')"
+                class="text-xs text-slate-500 hover:text-red-400 flex items-center gap-1 transition-colors">
+                <span class="material-symbols-outlined text-sm">delete</span>
+                Clear Chat
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</main>
+
+<!-- ✅ Fixed Bottom Input -->
+<div class="fixed bottom-0 left-[280px] right-0 p-6 bg-gradient-to-t from-surface via-surface/95 to-transparent pointer-events-none z-30">
+    <form action="/chat" method="post" id="chat-form"
+        class="max-w-4xl mx-auto pointer-events-auto">
+        <div class="bg-surface-container-highest/80 backdrop-blur-xl border border-outline-variant/20 rounded-full p-2 flex items-center gap-2 shadow-2xl shadow-black/20">
+
+            <!-- Mic button -->
+            <button type="button" id="mic-btn" onclick="startSpeech()"
+                class="w-12 h-12 rounded-full bg-tertiary-container text-on-surface flex items-center justify-center hover:scale-105 transition-transform flex-shrink-0">
+                <span class="material-symbols-outlined">mic</span>
+            </button>
+
+            <!-- Input -->
+            <input type="text" name="user_question" id="user_question"
+                class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline/50 px-4 text-sm"
+                placeholder="Ask a question about the document..."
+                required maxlength="500"
+                oninput="updateCharCount(this)"/>
+
+            <div class="flex items-center gap-2 pr-2">
+                <!-- Char count -->
+                <span id="char-count" class="text-[10px] text-outline hidden">0/500</span>
+
+                <!-- Attach file -->
+                <button type="button" class="p-2 text-outline hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined">attach_file</span>
+                </button>
+
+                <!-- Send button -->
+                <button type="submit"
+                    class="w-12 h-12 rounded-full bg-primary-gradient text-on-primary-container flex items-center justify-center hover:scale-105 transition-transform shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined">send</span>
+                </button>
+            </div>
+        </div>
+        <p class="text-center text-[10px] text-outline mt-2">AI Scholar can make mistakes. Check important information.</p>
+    </form>
+</div>
+
+<script>
+// ✅ Dark mode
+const html = document.getElementById('html-root');
+const themeIcon = document.getElementById('theme-icon');
+if (localStorage.getItem('darkMode') === 'false') {
+    html.classList.remove('dark');
+    if (themeIcon) themeIcon.textContent = 'light_mode';
+}
+function toggleDark() {
+    const isDark = html.classList.toggle('dark');
+    localStorage.setItem('darkMode', isDark);
+    if (themeIcon) themeIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
+}
+
+// ✅ Auto scroll to bottom
+function scrollToBottom() {
+    const msgs = document.getElementById('chat-messages');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+scrollToBottom();
+
+// ✅ Typing indicator on submit
+document.getElementById('chat-form').addEventListener('submit', () => {
+    document.getElementById('typing-indicator').classList.remove('hidden');
+    scrollToBottom();
+});
+
+// ✅ Character counter
+function updateCharCount(input) {
+    const counter = document.getElementById('char-count');
+    const len = input.value.length;
+    counter.textContent = len + '/500';
+    counter.classList.toggle('hidden', len === 0);
+    if (len > 400) counter.classList.add('text-amber-400');
+    else counter.classList.remove('text-amber-400');
+}
+
+// ✅ Copy message
+function copyMessage(btn) {
+    const content = btn.closest('.group').querySelector('.chat-box');
+    const text = content ? (content.innerText || content.textContent) : '';
+    navigator.clipboard.writeText(text).then(() => {
+        const icon = btn.querySelector('.material-symbols-outlined');
+        icon.textContent = 'check';
+        setTimeout(() => icon.textContent = 'content_copy', 2000);
+    });
+}
+
+// ✅ TTS with stop
+let currentSpeakBtn = null;
+function speakMessage(btn) {
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        if (currentSpeakBtn) {
+            currentSpeakBtn.querySelector('.material-symbols-outlined').textContent = 'volume_up';
+        }
+        if (currentSpeakBtn === btn) { currentSpeakBtn = null; return; }
+    }
+    const content = btn.closest('.group').querySelector('.chat-box');
+    const text = content ? (content.innerText || content.textContent) : '';
+    if (!('speechSynthesis' in window)) { alert('TTS not supported.'); return; }
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US'; utter.rate = 0.95;
+    btn.querySelector('.material-symbols-outlined').textContent = 'stop';
+    currentSpeakBtn = btn;
+    utter.onend = utter.onerror = () => {
+        btn.querySelector('.material-symbols-outlined').textContent = 'volume_up';
+        currentSpeakBtn = null;
+    };
+    window.speechSynthesis.speak(utter);
+}
+
+// ✅ Speech to text
+function startSpeech() {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        alert('Speech recognition not supported. Use Chrome.'); return;
+    }
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const rec = new Recognition();
+    rec.lang = 'en-US'; rec.interimResults = false;
+    const btn = document.getElementById('mic-btn');
+    btn.classList.add('bg-red-500/20');
+    btn.querySelector('.material-symbols-outlined').textContent = 'radio_button_checked';
+    rec.start();
+    rec.onresult = (e) => {
+        document.getElementById('user_question').value = e.results[0][0].transcript;
+        updateCharCount(document.getElementById('user_question'));
+    };
+    rec.onend = rec.onerror = () => {
+        btn.classList.remove('bg-red-500/20');
+        btn.querySelector('.material-symbols-outlined').textContent = 'mic';
+    };
+}
+
+// ✅ Search in chat
+function searchChat(query) {
+    document.querySelectorAll('.message-content').forEach(content => {
+        const chatBox = content.querySelector('.chat-box');
+        if (!chatBox) return;
+        chatBox.innerHTML = chatBox.innerHTML.replace(/<mark class="highlight">(.*?)<\/mark>/gi, '$1');
+        const li = content.closest('div.group, div.flex');
+        if (!query) { if(li) li.style.display = ''; return; }
+        const text = chatBox.textContent || '';
+        if (text.toLowerCase().includes(query.toLowerCase())) {
+            if(li) li.style.display = '';
+            const regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+            chatBox.innerHTML = chatBox.innerHTML.replace(regex, '<mark class="highlight">$1</mark>');
+        } else {
+            if(li) li.style.display = 'none';
+        }
+    });
+}
+function clearSearch() {
+    document.getElementById('search-input').value = '';
+    searchChat('');
+}
+
+// ✅ Export chat
+function exportChat() {
+    let text = 'CHAT SCHOLAR — EXPORT\n' + '='.repeat(40) + '\n\n';
+    document.querySelectorAll('#chat-messages > div').forEach(item => {
+        const isHuman = item.querySelector('.bg-human-gradient');
+        if (isHuman) {
+            const content = isHuman.querySelector('p');
+            if (content) text += '[YOU]\n' + content.innerText + '\n\n' + '-'.repeat(40) + '\n\n';
+        }
+        const chatBox = item.querySelector('.chat-box');
+        if (chatBox && !isHuman) {
+            text += '[AI SCHOLAR]\n' + chatBox.innerText + '\n\n' + '-'.repeat(40) + '\n\n';
+        }
+    });
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'chat_export.txt'; a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ✅ Make resource links open in new tab
+document.querySelectorAll('.resources-box a').forEach(link => {
+    link.setAttribute('target', '_blank');
+    link.setAttribute('rel', 'noopener noreferrer');
+});
+</script>
+
+</body>
+</html>

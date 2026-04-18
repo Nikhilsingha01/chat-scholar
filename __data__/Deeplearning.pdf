@@ -1,0 +1,909 @@
+The Perceptron is the simplest type of artiﬁcial neuron, introduced by Frank Rosenblatt in 1958. It is 
+the foundation of neural network and Deep learning.
+It mimics how a biological neuron works taking inputs, processing them, and giving an output.
+Perceptron
+Table
+-
+>
+Age
+BP
+-
+output
+Cholestrol
+heart
+Diese
+G
+⑮
+⑩
+I
+28
+36
+120
+go
+O
+& 2
+180
+160
+S
+S
+·
+-
+·
+!
+Step
+-
+1
+=
+y
+= me + -
++
+ho(x = +01x
+noex
+= Go +Ex
++Ge
++03
+-
+>
+S
+·
+Step-2
+->
+Sigmoid
+Activation function
+(
+-Tg(-2)
+=
+z
+=(o +Gu
++G2( + Gz((y)
+↓S
+
+Step = 3
+logloss
+function
+=>
+Loss find
+Step-2-opitimize
+00 +1
+To
+Logloss
+&
+6
+Ent
+⑧
+6
+g
+O
+E
+⑭
+·
+. de
+& I
+we did
+all of
+this
+using
+percentron
+M
+SCI
+-
+>
+W
+,
+bies
+↓
+-
+(2
+W2
+1
+=> ((( ,
+xw ,
++
+(2xwz
++ (3xwz + bin)
+°
+92
+WS
+O
+=> (0
+, (
++ 02(x
++ 03
++ Go)
+-
+↑
+some
+sigmoid
+Activation function
+[ Fyc
+-2)
+dP=
+= Old
+Limitations of
+Perseptrons
+->
+Step Activation function·
+
+ANN (Artificial
+Nural network)
+↳
+wi
+az3
+47
+ef
+Us
+I 6
+wG
+16 07
+outhelt
+1
+↳
+layer
+↓
+hicktes
+enfutlay er
+layer
+Forward
+Progation
+·
+2
+O . S ↓
+·
+O. z
+·
+.
+1
+⑫
+002
+0 .8320
+Li
+-
+0- 05
+0
+- g
+0
+. 8176
+-0
+- 7
+- or2
+or 3
+300
+-
+>
+-
+~
+her
+=
+(x
+w ,)
++(x(w2)
++ (((ws))
++ 6
+=
+(200) (00s)
++
+100(0 -2)
++
+3.0(0 +)
++ 0 -1
+2 1067
+U =Tots
+( (100)
+=
+0
+. 8320
+- - -
+outhut
+neuron
+= (0
+.8320 (102)]
++ [0
+.8176(0
+- -]
++ 0
+. 03
+·
+=
+0
+. 8761
+y Pred
+=
+I
+7005
+~(0
+.1761)=
+80=100s
+=/
+
+* 3 important things
+Activation
+function
+loss function
+optimizers
+-
+-
+↓
+-
+Forward Propogation
+Backward Propogation
+·
+Backward
+propogation
+y
+= 0 . 6168
+y
+=
+n
+(v
+- - Logloss
+= (y
+xlog(y)
++ (1
+- y)xlog)1
+-y)]
+=>g
+-
+> ⑪
+60 ,
+-
+w2
+/
+-
+>
+w3
+S
+⑮
+~ 6
+Loss = 0
+. 898
+↓to
+u
+wo
+40g
+-
+ving
+!o
+-
+·
+wa new
+=
+Woold
+= n(
+wawem
+-
+wo new
+- wood-n)=)
+-
+Il
+·
+~
+↓*
+en rull of Derivative A
+(Wi
+, Wa
+, Wa
+, Wo
+,
+Ws , Wo)
+=
+0 . 832
+LOSS
+↓
+changed
+=>
+389-coss(j)
+
+What is the Vanishing Gradient Problem?
+The vanishing gradient problem happens during backpropagation when gradients (the small updates we calculate to 
+adjust weights) become so tiny that the earlier layers of a deep neural network stop learning.
+In other words:
+When training deep networks, gradients are multiplied layer by layer.
+If these gradients are very small (< 1), multiplying them across many layers makes them shrink toward zero.
+This means the ﬁrst few layers (closer to the input) never get updated properly, so the network fails to learn important
+low-level features.
+After this
+we
+use
+optimizers
+like
+Gradient Das cent
+-
+1
+epoch = -IFP
+↳
+/ BP
+↳
+62 %.
+2 epoch +
+by
+↳
+3117)
+72
+&11
+=
+gy
+S1)
+=
+86
+:
+2thepoch
+92 %
+Activation
+function
+①
+Sigmoid Afe-()
+↳wishing
+Gradient
+Problem
+·
+Y- -0
+
+Type of Activation Functions 
+1.
+Linear Activation Function
+A linear activation function is the simplest type of activation function.
+It basically means:
+f(x) = x
+So, the output is the same as the input. The neuron doesn’t transform the data it
+ just passes it forward as it is.
+Where do we use it?
+In regression tasks (predicting continuous values like salary, house price, temperature, etc.).
+Usually in the output layer of a neural network, because we don’t want the output to be restricted between 0–1 (like sigmoid) or -1–1 
+(like tanh).
+Example:
+If you’re predicting house price, you want outputs like ₹50,00,000 or ₹80,00,000.
+A sigmoid function would squeeze everything between 0 and 1, which won’t make sense here.
+61
+n
+62
+03
+6 8
+(1
+u
+I
+↑
+I
+-
+>
+·
+01W2
+wa
+wa
+↓
+OR
+03
+·
+Of
+26
+I
+(
+&
+Ot
+6. 823
+&
+0 - 729
+0
+. 29)
+vo]Fox
+100
+x 2
+-
+100 X 0-5
+I
+&
+-
+- .n
+g
+- o
+. S
+= 58
+W new
+=
+Wold
+-02s
+-
+C
+=
+↓
+
+Limitations
+If you use linear activation in all layers, the whole network becomes just a linear model, no matter how many layers you add.
+That means it cannot capture complex, non-linear patterns in data.
+That’s why hidden layers use non-linear activations (like ReLU, tanh, sigmoid), but the output layer for regression can be linear.
+2.
+Sigmoid Activation Function
+The sigmoid function is an S-shaped curve that squashes any real number into a range between 0 and 1.
+The formula is:
+So no matter how large or small the input, the output will always stay between 0 and 1.
+Where do we use it?
+In binary classiﬁcation problems (e.g., predicting yes/no, disease/no disease, spam/not spam).
+Usually in the output layer when you want a probability as the output.
+Example:
+If the sigmoid outputs 0.85, you can interpret it as 85% chance of having heart disease.
+Limitations
+Vanishing gradient problem: for very large or very small inputs, the gradient becomes almost 0, which slows 
+learning.
+Not used in hidden layers much nowadays (ReLU is preferred).
+3. Tanh Activation Function
+The tanh function (short for hyperbolic tangent) is another squashing function 
+like sigmoid, but instead of squeezing values into 0 to 1, it squeezes them into -1 
+to +1.
+Formula : 
+Where do we use it?
+• Often used in hidden layers of  nural network 
+Useful when data has both positive and negative values because it centres the 
+output around 0 (unlike sigmoid which is centred at 0.5)
+
+Advantages
+Outputs are zero-centered (good for optimization).
+Stronger gradients than sigmoid in the range (−1,1), so learning can be faster.
+Limitations
+Still suffers from the vanishing gradient problem when inputs are very large (positive or negative).
+That’s why in modern deep learning, ReLU is more common in hidden layers.
+4.
+ReLU Activation Function
+ReLU stands for Rectiﬁed Linear Unit.
+It’s super simple:
+That means:
+IF input x < 0 -> output = 0 
+if input x > 0 ->     output = x
+So it either passes positive values as they are or blocks negative values by turning them into 0.
+Where do we use it?
+•
+Hidden layers of almost all modern deep neural networks.
+•
+Works really well in CNNs (Convolutional Neural Networks), image recognition, NLP, and many more tasks.
+Advantages
+•
+Very fast and simple to compute.
+•
+Helps avoid vanishing gradient problem (better than sigmoid/tanh).
+•
+Makes training deep networks much faster.
+Limitations
+•
+Dying ReLU problem: sometimes neurons get stuck at 0 forever if weights update badly.
+•
+Not smooth at 0 (not differentiable there, but still works ﬁne in practice).
+-
+
+5.
+Leaky ReLU Activation Function
+It’s just like ReLU, but with a small twist.
+In ReLU, whenever the input is negative, the output is 0.
+Leaky ReLU’s ﬁx:
+Instead of giving 0 for negative inputs, it gives a tiny negative value (like 0.01 × input).
+This way, the neuron is never completely dead.
+Formula: 
+f(x) =
+x       if x > 0
+      0.01x  if x<=0
+Advantages of Leaky ReLU
+Fixes “Dead Neuron” Problem
+◦
+In normal ReLU, if inputs go negative, the output is always negative neuronsays 0, and sometimes the neuron 
+stops learning permanently (dead neuron).
+◦
+Leaky ReLU solves this by allowing a small negative slope, so neurons still update weights.
+Computationally Simple
+◦
+Just like ReLU, the function is very easy to compute (no heavy math like exponentials in Sigmoid/Tanh).
+Better Gradient Flow
+◦
+Since even negative inputs have a small gradient (e.g., 0.01), the network can continue learning, reducing the 
+vanishing gradient issue.
+Works Well in Deep Networks
+◦
+Especially useful in deep neural networks where ReLU may suffer from many dead neurons.
+Limitations: small negative slope may bias results, slope value needs tuning
+
+PReLU (Parametric Rectiﬁed Linear Unit) is an improved version of Leaky ReLU.
+In Leaky ReLU, the slope for negative values (like 0.01) is ﬁxed by us. But in PReLU, 
+that slope is learned automatically by the model during training. This makes it more 
+ﬂexible and adaptive.
+The formula is same as Leaky relu 
+Intuition (Easy Way)
+ReLU: Negative values are killed (output = 0).
+Leaky ReLU: Negative values are given a tiny leak (e.g., 0.01x).
+PReLU: Instead of ﬁxing that leak, the model says “I’ll learn the best leak slope 
+myself.”
+Advantages
+1. Fixes dead neurons (like Leaky ReLU).
+2. Adaptive – slope is learned, not ﬁxed.
+3. Better accuracy – often improves CNNs and deep networks.
+Limitations
+1. Extra parameters – slope a adds more trainable values.
+2. Risk of overﬁtting if dataset is small.
+3. Slightly more complex than plain ReLU.
+6.
+PReLU Activation Function
+7.
+Swish Activation Function
+Swish is a smooth, non-linear activation function introduced by Google 
+researchers.
+It is Deﬁned as : 
+Where σ(x) is the sigmoid function 
+so basically: Swish = X * Sigmoid(x)
+Intuition (Easy Way)
+Think of it as ReLU but smoother.
+For large positive inputs → output ≈ input (like ReLU).
+For large negative inputs → output is small but not strictly zero (like 
+Leaky ReLU).
+Around zero → the curve is smooth, not sharp like ReLU.
+This smoothness often makes training deep networks easier.
+
+Advantages
+1. Smooth curve → better gradient ﬂow, avoids sharp jumps like ReLU.
+2. Non-monotonic → can adapt better to complex patterns.
+3. Works well in deep networks (often improves accuracy over ReLU).
+Limitations
+1. More computation (needs sigmoid).
+2. Not always better than ReLU (depends on problem).
+3. Slight risk of slower training compared to simple ReLU.
+1. loss
+This is the training loss.
+It tells you how wrong your model’s predictions are on the training set, according to the loss function you chose (in your case: binary 
+cross-entropy).
+Lower is better.
+During training, the model tries to reduce this number by updating weights with gradient descent.
+2. accuracy
+This is the training accuracy.
+It tells you what fraction of training samples the model is correctly predicting.
+Example: If you have 100 samples and the model gets 80 correct → accuracy = 0.80 (80%).
+Usage of
+Activation functions
+4
+Linear faction
+&
+Layer
+3
+Sigmoid - (011)
+↳
+↓
+Y
+Layer-a
+Rele
+Soft mes
+Layer-1
+-
+No Activation
+Resu
+Leakya
+Preli
+functions
+
+3. val_loss
+This is the validation loss.
+After generalizing well or just memorizingion set (the split you gave with validation_data=...) and calculates the loss on that unseen data.
+This tells you whether your model is generalizing well or just memorizing the training data.
+4. val_accuracy
+This is the validation accuracy.
+It’s the percentage of correct predictions on the validation set.
+If accuracy is high but val_accuracy is low → your model is probably overﬁtting (memorizing training but failing on new data).
+Where to pay attention
+         •
+loss & accuracy = how well model is doing on training data.
+•
+val_loss & val_accuracy = how well model is doing on new unseen data.
+ Always pay more attention to validation metrics because that shows how the model will behave in the real world.
+2000-
+2010
+·
+Loss functions
+Regression
+classification
+↓
+MSE
+(mean
+squared error
+Binary cross entropy
+MDE
+(Mean
+Boscute error)
+classification cross entropy
+huber loss
+MSLE
+⑱E
+100 hous
+=>
+pos
+= 100
+E
+y
+↓
+~
+①E
+# x100
+-
+>
+-⑫
+↳
+1
+
+cost function= (y-y
+10 X 100
+= 1000
+-
+Pros
+Y
+->
+very
+common
+1
+⑮
+-
+->
+Penalizes the Big error
+↳↳
+55-
+look
+⑮$
+Cons
+MBE - (y - y)
+Pros
+-> More Robust
+to
+outliers
+->
+Each error
+contributes
+equally
+Cons
+-> Dosen't
+Punish
+large errors
+huber
+loss
+Small error -MSE
+Large errors
+->
+MAE
+MSQE
+.
+
+classification
+loss function
+one not encoding
+X
+, X2x Animal
+⑲d
+Animal
+-
+Animal
+g
+O
+·
+dat
+0
+O
+I
+Duy
+O
+I
+O
+!
+horse
+O
+O
+I
+Sat
+!
+horse
+I
+g
+O
+·
+O
+Dog
+O 0
+↓
+:
+O
+I
+O
+i
+y
+g
+softfmax
+e
+softmas
+·
+Sigmoid
+---
+=
+Loss
+Activation
+&
+Binarycross entropy -> sigmoid
+&
+0
+,
+1
+
+1. Batch Gradient Descent (a.k.a. “Vanilla” Gradient Descent)
+•
+You send all 1 lakh rows at once.
+•
+Compute cKerasunction on the entire dataset.
+•
+Do 1 weight update per epoch.
+•
+If you run 100 epochs → 100 weight updates in total.
+ Advantages
+•
+Smooth and stable updates (less noisy).
+•
+Converges steadily because gradient is calculated from all data.
+ Disadvantages
+•
+Slow when dataset is huge (computing gradients for all rows before updating).
+•
+Requires a lot of RAM/VRAM to load the full dataset at once.
+2.  Stochastic Gradient Descent (SGD)
+•
+You send 1 row at a time.
+•
+Compute cost for that single row.
+•
+Update weights immediately.
+•
+With 1 lakh rows, in 1 epoch → 1 lakh updates.
+•
+In 100 epochs → 1 crore updates.
+ Advantages
+•
+Much faster to start learning (weights update after every row).
+•
+Works well for very large datasets (you don’t need all rows in memory at once).
+ Disadvantages
+•
+Updates are very noisy → loss curve jumps around instead of smoothly decreasing.
+•
+Can be unstable (harder to converge).
+•
+Slower to reach the exact minimum compared to mini-batch.
+3.  The Practical Solution: Mini-Batch Gradient Descent
+•
+A compromise between batch and SGD.
+•
+Split data into small batches (e.g., 32, 64, 128 rows).
+•
+Each batch → forward pass → backward pass → weight update.
+•
+So: in 1 lakh rows, batch size 100 → 1000 updates per epoch.
+ This is what almost all deep learning frameworks use today (including Keras/TensorFlow).
+Optimizers
+-
+>
+Wow
+= Wold-R
+Zwoll
+·
+100. 000
+Rows
+↳-
+>
+-
+>
+O
+-
+1
+-y
+cost function
+-
+100 epochs
+->
+updating
+the weights
+-
+100
+times
+-
+=
+100 000 Rous
+-
+I
+S
+-LIR-
+100 enoch
+-
+100 X 100000 +y
+=
+Undate
+weight
+=
+I care up
+-
+2RG
+3 Row
+" 3
+↑
+& Ros
+-
+100000 Rows
+-
+C
+100000
+=
+100 Batch size
+100 enoch
+4
+E
+-
+>
+3
+Y
+Iteration-
+-
+l
+100x1000
+= %
+⑱
+
+nim
+momentu
+with SGD
+1
+I
+·
+5444
+,
+-
+au
+Momentum
+=
+masx velocity
+Wou
+= Word-n W
+-
+w + +
+=
+w + =
+⑳g
+↳
+VA
+= Bx0
+=
+1
++ naw+
+Adagrad
+(Adaptive Gradient descent)
+w +
+=
+w + - 1 - + - 1
+&instant·
+I
+
+w
+=
+wr -- ·
+#
+the Epitom
+-
+X
+0
+. 01
++
+0
+. 002 + 0
+. 001
+Art
+-
+Adam
+optimizer
+↳
+Delagrad +Momentum ·
+-
+-
+Decision
+The -
+white box model
+Random
+Forest+ Black
+box
+model
+ANN
+-
+Black box model
+LR-white box model
+

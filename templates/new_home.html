@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root" class="dark">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Chat Scholar — AI Educational Intelligence</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary": "#003824",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-tertiary-container": "#00311f",
+                        "on-error": "#690005",
+                        "on-secondary": "#3c0091",
+                        "background": "#031427",
+                        "error-container": "#93000a",
+                        "surface-tint": "#adc6ff",
+                        "outline": "#8c909f",
+                        "secondary": "#d0bcff",
+                        "primary-container": "#4d8eff",
+                        "surface-dim": "#031427",
+                        "primary": "#adc6ff",
+                        "primary-fixed": "#d8e2ff",
+                        "tertiary-container": "#00a572",
+                        "on-secondary-container": "#c4abff",
+                        "on-primary": "#002e6a",
+                        "surface-container-lowest": "#000f21",
+                        "secondary-fixed-dim": "#d0bcff",
+                        "secondary-fixed": "#e9ddff",
+                        "surface-container-low": "#0b1c30",
+                        "error": "#ffb4ab",
+                        "surface-container-high": "#1b2b3f",
+                        "surface": "#031427",
+                        "tertiary-fixed": "#6ffbbe",
+                        "tertiary": "#4edea3",
+                        "inverse-primary": "#005ac2",
+                        "surface-bright": "#2a3a4f",
+                        "outline-variant": "#424754",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "inverse-on-surface": "#213145",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-container-highest": "#26364a",
+                        "surface-container": "#102034",
+                        "secondary-container": "#571bc1",
+                        "on-surface": "#d3e4fe",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#5516be",
+                        "on-primary-container": "#00285d",
+                        "inverse-surface": "#d3e4fe",
+                        "surface-variant": "#26364a",
+                        "on-tertiary-fixed": "#002113",
+                        "on-secondary-fixed": "#23005c",
+                        "on-background": "#d3e4fe",
+                        "on-primary-fixed": "#001a42"
+                    },
+                    borderRadius: {
+                        DEFAULT: "1rem",
+                        lg: "2rem",
+                        xl: "3rem",
+                        full: "9999px"
+                    },
+                    fontFamily: {
+                        headline: ["Plus Jakarta Sans"],
+                        body: ["Inter"],
+                        label: ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+
+<script>
+function toggleNotif(){
+    document.getElementById("notifBox")
+    .classList.toggle("hidden");
+}
+</script>
+
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #031427;
+            color: #d3e4fe;
+            overflow-x: hidden;
+        }
+        .font-plus-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .bg-signature-gradient { background: linear-gradient(to right, #adc6ff, #4d8eff); }
+        .text-gradient {
+            background: linear-gradient(to right, #adc6ff, #4d8eff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-panel {
+            background: rgba(42, 58, 79, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(140, 144, 159, 0.15);
+        }
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(77, 142, 255, 0.15) 0%, rgba(3, 20, 39, 0) 70%);
+            filter: blur(60px);
+            z-index: -1;
+        }
+
+        /* Light mode overrides */
+        html:not(.dark) body {
+            background-color: #f0f4ff;
+            color: #1e293b;
+        }
+        html:not(.dark) nav {
+            background: rgba(240, 244, 255, 0.85) !important;
+        }
+        html:not(.dark) .glass-panel {
+            background: rgba(255,255,255,0.6);
+            border: 1px solid rgba(100,120,200,0.15);
+        }
+        html:not(.dark) .bg-surface-container-low { background-color: #e8eeff; }
+        html:not(.dark) .bg-surface-container-high { background-color: #dce6ff; }
+        html:not(.dark) .bg-surface-container-highest { background-color: #d4e0ff; }
+        html:not(.dark) .bg-surface-bright { background-color: #c8d8ff; }
+        html:not(.dark) .text-on-surface-variant { color: #4a5568; }
+        html:not(.dark) .text-white { color: #1e293b !important; }
+        html:not(.dark) .border-outline-variant\/10 { border-color: rgba(100,120,200,0.15); }
+    </style>
+</head>
+
+<body class="selection:bg-primary/30">
+
+<!-- Background Blobs -->
+<div class="blob top-[-100px] left-[-100px]"></div>
+<div class="blob bottom-[-200px] right-[-100px] bg-[radial-gradient(circle,rgba(78,222,163,0.1)_0%,rgba(3,20,39,0)_70%)]"></div>
+
+<!-- ✅ Top Navbar -->
+<nav class="fixed top-0 left-0 right-0 h-16 bg-slate-950/80 backdrop-blur-[20px] z-50">
+    <div class="flex justify-between items-center px-8 h-full max-w-[1400px] mx-auto">
+
+        <!-- Brand -->
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-signature-gradient flex items-center justify-center">
+                <span class="material-symbols-outlined text-on-primary-container text-sm" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+            </div>
+            <span class="font-plus-jakarta text-lg font-bold text-gradient">Chat Scholar</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-6">
+            <div class="hidden md:flex items-center gap-4 mr-4">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('pdf_chat') }}"
+                        class="text-slate-400 hover:text-white font-medium transition-colors">
+                        Dashboard
+                    </a>
+                    <a href="{{ url_for('logout') }}"
+                        class="bg-signature-gradient text-on-primary-container px-6 py-2 rounded-full font-bold transition-transform hover:scale-105 active:scale-95">
+                        Logout
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}"
+                        class="text-slate-400 hover:text-white font-medium transition-colors">
+                        Login
+                    </a>
+                    <a href="{{ url_for('signup') }}"
+                        class="bg-signature-gradient text-on-primary-container px-6 py-2 rounded-full font-bold transition-transform hover:scale-105 active:scale-95">
+                        Sign Up
+                    </a>
+                {% endif %}
+            </div>
+            <div class="flex items-center gap-4 text-slate-400">
+                <!-- ✅ Dark mode toggle -->
+                <div class="relative">
+
+        <button onclick="toggleNotif()"
+        class="relative text-slate-400 hover:text-blue-300">
+
+            <span class="material-symbols-outlined text-2xl">
+                notifications
+            </span>
+
+            {% if unread_count > 0 %}
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full">
+                {{ unread_count }}
+            </span>
+            {% endif %}
+
+        </button>
+
+        <!-- Dropdown -->
+        <div id="notifBox"
+        class="hidden absolute right-0 mt-4 w-80 bg-slate-900 border border-slate-700 rounded-2xl shadow-xl p-4 z-50">
+
+            <h3 class="text-white font-bold mb-3">Notifications</h3>
+
+            {% if notifications %}
+
+                {% for n in notifications %}
+                <div class="py-3 border-b border-slate-800">
+
+                    <p class="text-sm text-white">
+                        {{ n.message }}
+                    </p>
+
+                    <p class="text-xs text-slate-400 mt-1">
+                        {{ n.created_at.strftime('%d %b %I:%M %p') }}
+                    </p>
+
+                </div>
+                {% endfor %}
+
+            {% else %}
+
+                <p class="text-slate-400 text-sm">
+                    No notifications
+                </p>
+
+            {% endif %}
+
+        </div>
+
+        </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ✅ Hero Section -->
+<main class="relative pt-32 pb-20 px-8">
+    <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center min-h-[80vh]">
+
+        <!-- Left Content -->
+        <div class="flex flex-col gap-8">
+            <div class="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 w-fit">
+                <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+                <span class="text-xs font-semibold text-primary uppercase tracking-widest">Join 1000+ Students Leading with AI</span>
+            </div>
+
+            <h1 class="font-plus-jakarta text-5xl md:text-6xl font-extrabold text-white leading-tight">
+                AI writing and analysis
+                <span class="text-gradient block">tools for businesses</span>
+            </h1>
+
+            <p class="text-on-surface-variant text-lg leading-relaxed max-w-lg">
+                Effortlessly chat with your PDFs, grade essays, and explore knowledge with AI.
+                Our editorial intelligence platform streamlines complex research.
+            </p>
+
+            <div class="flex flex-wrap gap-4">
+                <a href="{{ url_for('pdf_chat') }}"
+                    class="flex items-center gap-2 bg-signature-gradient text-on-primary-container px-8 py-4 rounded-full font-bold text-lg transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-primary/20">
+                    Start PDF Chat
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+                <a href="{{ url_for('essay_rubric') }}"
+                    class="px-8 py-4 rounded-full border-2 border-outline-variant/30 text-white font-bold text-lg hover:bg-white/5 transition-all">
+                    Grade an Essay
+                </a>
+            </div>
+        </div>
+
+        <!-- Right Illustration -->
+        <div class="relative flex justify-center items-center">
+            <div class="relative w-full aspect-square max-w-[500px]">
+                <!-- Main Panel -->
+                <div class="absolute inset-0 rounded-3xl overflow-hidden glass-panel flex items-center justify-center p-8">
+                    <img alt="AI Intelligence Concept"
+                        class="w-full h-full object-cover rounded-2xl opacity-80 mix-blend-lighten"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrfSPndH1qWAYMWirWsXVcMFPgGePURNLjhWNg3iDO_Fu23mQuCRg-92Yf6mLZqedmjtSzV_HuWtOOgZGpxlVSIUvaPOTBzWP9dhkYwIoz2ShlnPz8Km0QYQJ1FNeqlyYl75voAxz1huOulymtniCwCXAsvjPg4ykoHXWt__cVzJ6I-14upo4cctJa4KinnuWrLhfqphTR52sDmgN5l1H9Dczg-qZWp5VaWkiVCBjmWUWN9HDxuTylHmfpv7nLbEJ8O-SQzcw3-O47"/>
+                </div>
+                <!-- Floating Chat Bubble -->
+                <div class="absolute -top-10 -right-10 w-32 h-32 glass-panel rounded-2xl flex items-center justify-center shadow-2xl">
+                    <span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+                </div>
+                <!-- Floating Document -->
+                <div class="absolute bottom-10 -left-12 w-40 h-40 glass-panel rounded-full flex items-center justify-center shadow-2xl">
+                    <span class="material-symbols-outlined text-5xl text-tertiary" style="font-variation-settings: 'FILL' 1;">description</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ✅ Features Section -->
+<section class="py-24 px-8 bg-surface-container-low">
+    <div class="max-w-[1400px] mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="font-plus-jakarta text-3xl md:text-4xl font-bold text-white mb-4">Precision Educational Tools</h2>
+            <p class="text-on-surface-variant max-w-2xl mx-auto">
+                Leverage state-of-the-art language models optimized for academic integrity and business analysis.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+            <!-- PDF Chat Card -->
+            <div class="group bg-surface-container-highest p-10 rounded-lg transition-all duration-300 hover:-translate-y-2 hover:bg-surface-bright cursor-pointer"
+                onclick="window.location='{{ url_for('pdf_chat') }}'">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center mb-8">
+                    <span class="material-symbols-outlined text-3xl text-on-primary-container" style="font-variation-settings: 'FILL' 1;">chat</span>
+                </div>
+                <h3 class="font-plus-jakarta text-2xl font-bold text-white mb-4">PDF Chat</h3>
+                <p class="text-on-surface-variant leading-relaxed">
+                    Ask questions from any document. Extract summaries, citations, and key insights in seconds with contextual AI understanding.
+                </p>
+                <div class="mt-8 flex items-center gap-2 text-primary font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                    Explore PDF Chat <span class="material-symbols-outlined">arrow_forward</span>
+                </div>
+            </div>
+
+            <!-- Essay Grading Card -->
+            <div class="group bg-surface-container-highest p-10 rounded-lg transition-all duration-300 hover:-translate-y-2 hover:bg-surface-bright cursor-pointer"
+                onclick="window.location='{{ url_for('essay_rubric') }}'">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-tertiary to-tertiary-container flex items-center justify-center mb-8">
+                    <span class="material-symbols-outlined text-3xl text-on-tertiary-container" style="font-variation-settings: 'FILL' 1;">rate_review</span>
+                </div>
+                <h3 class="font-plus-jakarta text-2xl font-bold text-white mb-4">Essay Grading</h3>
+                <p class="text-on-surface-variant leading-relaxed">
+                    Get structured AI feedback instantly. Professional-grade rubric analysis for grammar, flow, argumentation, and source usage.
+                </p>
+                <div class="mt-8 flex items-center gap-2 text-tertiary font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                    Grade Essay <span class="material-symbols-outlined">arrow_forward</span>
+                </div>
+            </div>
+
+            <!-- Share Chats Card -->
+           
+        <form action="{{ url_for('share_chat') }}" method="POST">
+
+        <button type="submit"
+        class="w-full text-left group bg-surface-container-highest p-10 rounded-lg transition-all duration-300 hover:-translate-y-2 hover:bg-surface-bright cursor-pointer">
+
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary to-secondary-container flex items-center justify-center mb-8">
+                <span class="material-symbols-outlined text-3xl text-on-secondary-container"
+                style="font-variation-settings:'FILL'1;">
+                share
+                </span>
+            </div>
+
+            <h3 class="font-plus-jakarta text-2xl font-bold text-white mb-4">
+                Share Chats
+            </h3>
+
+            <p class="text-on-surface-variant leading-relaxed">
+                Share your AI conversations with anyone. Create public links or export transcriptions for collaboration and study groups.
+            </p>
+
+            <div class="mt-8 flex items-center gap-2 text-secondary font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                Start Sharing
+                <span class="material-symbols-outlined">arrow_forward</span>
+            </div>
+
+        </button>
+
+        </form>
+        
+
+    </div>
+</section>
+
+<!-- ✅ Bento / Showcase Section -->
+<section class="py-24 px-8 overflow-hidden">
+    <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- Large Focus Card -->
+        <div class="lg:col-span-7 bg-surface-container-low rounded-lg p-12 relative overflow-hidden flex flex-col justify-end min-h-[500px]">
+            <div class="absolute top-0 left-0 w-full h-full opacity-40">
+                <img alt="Deep Learning"
+                    class="w-full h-full object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsXzRoswh89eyf0gc3NlU0O00_qc3rZ1cnivXogryZpqpZ7AWdPEE_6sBaFYVcYdUNmzXqp4xH7TJadkOdk3vtiRatkXgE8SvZXxU8z0m17qplgEVqsCC9xn1A1ERSviDlJ3rdJosZxscg-nC13YdnKpX-Yvp_zf2njTJyhOHRjsFUK02w5vjnXhy_sNLrQxyIr3NI-F-cmFXqnfZIFbDJR9-OWKKnlSBLghdzusyaGZ-gC8fdzcb-EpKNezw68IZulCp9FLdI_OZn"/>
+            </div>
+            <div class="relative z-10">
+                <h2 class="font-plus-jakarta text-4xl font-bold text-white mb-4">The New Standard for Academic Research</h2>
+                <p class="text-on-surface-variant max-w-lg mb-8">
+                    We bridge the gap between human curiosity and massive data repositories.
+                    Chat Scholar treats every document as a conversation partner.
+                </p>
+                <button class="bg-white text-slate-950 px-6 py-3 rounded-full font-bold hover:bg-primary transition-colors">
+                    Read Case Studies
+                </button>
+            </div>
+        </div>
+
+        <!-- Secondary Cards -->
+        <div class="lg:col-span-5 flex flex-col gap-8">
+
+            <!-- Privacy First -->
+            <div class="flex-1 bg-surface-container-high rounded-lg p-8 flex items-center gap-6">
+                <div class="flex-shrink-0 w-16 h-16 rounded-full glass-panel flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-3xl">verified_user</span>
+                </div>
+                <div>
+                    <h4 class="font-plus-jakarta text-xl font-bold text-white mb-2">Privacy First</h4>
+                    <p class="text-on-surface-variant text-sm">Your documents are encrypted and never used for model training without consent.</p>
+                </div>
+            </div>
+
+            <!-- Plagiarism Free -->
+            <div class="flex-1 bg-surface-container-high rounded-lg p-8 flex items-center gap-6 border-l-4 border-tertiary">
+                <div class="flex-shrink-0 w-16 h-16 rounded-full glass-panel flex items-center justify-center">
+                    <span class="material-symbols-outlined text-tertiary text-3xl">history_edu</span>
+                </div>
+                <div>
+                    <h4 class="font-plus-jakarta text-xl font-bold text-white mb-2">Plagiarism Free</h4>
+                    <p class="text-on-surface-variant text-sm">Our AI ensures responses are syntheses, not direct scrapes, promoting original thought.</p>
+                </div>
+            </div>
+
+            <!-- Enterprise Ready -->
+            <div class="flex-1 bg-signature-gradient rounded-lg p-8">
+                <h4 class="font-plus-jakarta text-xl font-bold text-on-primary-container mb-2">Enterprise Ready</h4>
+                <p class="text-on-primary-container/80 text-sm mb-4">
+                    Deploy Chat Scholar for your entire legal or medical team with custom API nodes.
+                </p>
+                <span class="text-on-primary-container font-bold flex items-center gap-1 cursor-pointer">
+                    Get Enterprise Quote <span class="material-symbols-outlined text-sm">open_in_new</span>
+                </span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ✅ Footer -->
+<footer class="py-16 px-8 border-t border-outline-variant/10">
+    <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-signature-gradient flex items-center justify-center">
+                <span class="material-symbols-outlined text-on-primary-container text-sm" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+            </div>
+            <span class="font-plus-jakarta text-lg font-bold text-white">Chat Scholar</span>
+        </div>
+
+        <div class="flex gap-8 text-on-surface-variant font-medium">
+            <a class="hover:text-primary transition-colors" href="#">Products</a>
+            <a class="hover:text-primary transition-colors" href="#">Pricing</a>
+            <a class="hover:text-primary transition-colors" href="#">API</a>
+            <a class="hover:text-primary transition-colors" href="#">Terms</a>
+        </div>
+
+        <div class="text-on-surface-variant text-sm">
+            © 2024 Chat Scholar. Educational AI Intelligence.
+        </div>
+    </div>
+</footer>
+
+<!-- ✅ Dark mode script -->
+<script>
+    const html = document.getElementById('html-root');
+    const icon = document.getElementById('theme-icon');
+
+    // Load saved preference
+    if (localStorage.getItem('darkMode') === 'false') {
+        html.classList.remove('dark');
+        if (icon) icon.textContent = 'light_mode';
+    } else {
+        html.classList.add('dark');
+        if (icon) icon.textContent = 'dark_mode';
+    }
+
+    function toggleDark() {
+        const isDark = html.classList.toggle('dark');
+        localStorage.setItem('darkMode', isDark);
+        if (icon) icon.textContent = isDark ? 'dark_mode' : 'light_mode';
+    }
+</script>
+
+</body>
+</html>

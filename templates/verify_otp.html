@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" id="html-root">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Verify Email - Chat Scholar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "background": "#031427","surface-tint": "#adc6ff","outline": "#8c909f",
+                    "secondary": "#d0bcff","primary-container": "#4d8eff","primary": "#adc6ff",
+                    "tertiary-container": "#00a572","on-secondary-container": "#c4abff",
+                    "on-primary": "#002e6a","surface-container-low": "#0b1c30","error": "#ffb4ab",
+                    "surface-container-high": "#1b2b3f","surface": "#031427","tertiary": "#4edea3",
+                    "surface-bright": "#2a3a4f","outline-variant": "#424754",
+                    "surface-container-highest": "#26364a","surface-container": "#102034",
+                    "secondary-container": "#571bc1","on-surface": "#d3e4fe",
+                    "on-surface-variant": "#c2c6d6","on-primary-container": "#00285d",
+                    "on-background": "#d3e4fe"
+                },
+                borderRadius: { DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px" },
+                fontFamily: { headline: ["Plus Jakarta Sans"], body: ["Inter"] }
+            }
+        }
+    }
+</script>
+<style>
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.pulse-aura { animation: pulse 2s infinite; }
+@keyframes pulse {
+    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(208,188,255,0.7); }
+    70%  { transform: scale(1);    box-shadow: 0 0 0 20px rgba(208,188,255,0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(208,188,255,0); }
+}
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%     { transform: translateX(-8px); }
+    40%     { transform: translateX(8px); }
+    60%     { transform: translateX(-6px); }
+    80%     { transform: translateX(6px); }
+}
+.shake { animation: shake 0.4s ease; }
+body { font-family: 'Inter', sans-serif; }
+.otp-input::placeholder { color: #424754; }
+</style>
+</head>
+<body class="bg-background text-on-background font-body min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+
+<div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px]"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[120px]"></div>
+</div>
+
+<main class="relative z-10 w-full max-w-[480px]">
+    <div class="bg-surface-container-low rounded-lg p-10 flex flex-col items-center text-center backdrop-blur-md shadow-2xl">
+
+        <!-- Pulsing Mail Icon -->
+        <div class="mb-8">
+            <div class="pulse-aura w-20 h-20 bg-secondary-container rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-secondary text-4xl" style="font-variation-settings: 'FILL' 1;">mail</span>
+            </div>
+        </div>
+
+        <!-- Title -->
+        <div class="space-y-3 mb-8">
+            <h1 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface">Verify your email</h1>
+            <p class="text-on-surface-variant leading-relaxed">
+                We sent a 6-digit code to
+                <span class="text-primary font-medium">{{ email }}</span>
+            </p>
+        </div>
+
+        <!-- Flask Error -->
+        {% if error %}
+        <div class="w-full mb-5 flex items-center justify-center gap-2 px-4 py-3 bg-error/10 rounded-xl border border-error/20">
+            <span class="material-symbols-outlined text-error text-[18px]">error</span>
+            <span class="text-error text-sm font-medium">{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Flask Success -->
+        {% if success %}
+        <div class="w-full mb-5 flex items-center justify-center gap-2 px-4 py-3 bg-tertiary/10 rounded-xl border border-tertiary/20">
+            <span class="material-symbols-outlined text-tertiary text-[18px]">check_circle</span>
+            <span class="text-tertiary text-sm font-medium">{{ success }}</span>
+        </div>
+        {% endif %}
+
+        <div class="w-full space-y-5">
+
+            <!-- OTP Verify Form -->
+            <form method="post" action="/verify_otp" id="otp-form">
+                <input type="hidden" name="action" value="verify"/>
+                <input type="hidden" name="otp" id="otp-combined"/>
+
+                <!-- 6 OTP boxes -->
+                <div class="flex justify-between gap-3 px-1 mb-6" id="otp-boxes">
+                    <input class="otp-input w-14 h-16 bg-surface-container-highest border border-outline-variant/15 rounded-[12px] text-center text-2xl font-bold text-primary focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all outline-none" maxlength="1" placeholder="•" type="text" inputmode="numeric"/>
+                    <input class="otp-input w-14 h-16 bg-surface-container-highest border border-outline-variant/15 rounded-[12px] text-center text-2xl font-bold text-primary focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all outline-none" maxlength="1" placeholder="•" type="text" inputmode="numeric"/>
+                    <input class="otp-input w-14 h-16 bg-surface-container-highest border border-outline-variant/15 rounded-[12px] text-center text-2xl font-bold text-primary focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all outline-none" maxlength="1" placeholder="•" type="text" inputmode="numeric"/>
+                    <input class="otp-input w-14 h-16 bg-surface-container-highest border border-outline-variant/15 rounded-[12px] text-center text-2xl font-bold text-primary focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all outline-none" maxlength="1" placeholder="•" type="text" inputmode="numeric"/>
+                    <input class="otp-input w-14 h-16 bg-surface-container-highest border border-outline-variant/15 rounded-[12px] text-center text-2xl font-bold text-primary focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all outline-none" maxlength="1" placeholder="•" type="text" inputmode="numeric"/>
+                    <input class="otp-input w-14 h-16 bg-surface-container-highest border border-outline-variant/15 rounded-[12px] text-center text-2xl font-bold text-primary focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all outline-none" maxlength="1" placeholder="•" type="text" inputmode="numeric"/>
+                </div>
+
+                <!-- Verify Button -->
+                <button type="submit"
+                    class="w-full h-14 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-headline font-bold text-lg hover:shadow-[0_0_30px_rgba(77,142,255,0.3)] transition-all active:scale-[0.98]">
+                    Verify Email
+                </button>
+            </form>
+
+            <!-- Resend OTP Form -->
+            <form method="post" action="/verify_otp">
+                <input type="hidden" name="action" value="resend"/>
+                <button type="submit" id="resend-btn" disabled
+                    class="w-full h-14 rounded-full border-2 border-outline-variant/15 text-on-surface-variant font-headline font-semibold hover:border-primary/50 hover:text-on-surface transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                    Resend OTP (<span id="countdown">01:00</span>)
+                </button>
+            </form>
+        </div>
+
+        <!-- Expiry + Back -->
+        <div class="mt-8 space-y-5">
+            <div class="flex items-center justify-center gap-2 px-4 py-2 bg-error/10 rounded-full border border-error/10">
+                <span class="material-symbols-outlined text-error text-[18px]">warning</span>
+                <span class="text-error text-sm font-medium">Code expires in 10 minutes</span>
+            </div>
+            <a class="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors group"
+                href="{{ url_for('signup') }}">
+                <span class="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>
+                <span class="text-sm font-semibold">Back to signup</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-8 flex justify-center gap-6 text-[12px] font-medium text-on-surface-variant/40">
+        <span class="flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">lock</span>
+            Secure Verification
+        </span>
+        <span>Privacy Policy</span>
+        <span>Contact Support</span>
+    </div>
+</main>
+
+<script>
+const boxes = document.querySelectorAll('.otp-input');
+const combined = document.getElementById('otp-combined');
+const form = document.getElementById('otp-form');
+
+boxes.forEach((box, index) => {
+    box.addEventListener('input', () => {
+        box.value = box.value.replace(/[^0-9]/g, '');
+        if (box.value && index < boxes.length - 1) boxes[index + 1].focus();
+        updateCombined();
+    });
+    box.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !box.value && index > 0) {
+            boxes[index - 1].focus();
+            boxes[index - 1].value = '';
+            updateCombined();
+        }
+    });
+    box.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+        paste.split('').forEach((char, i) => { if (boxes[i]) boxes[i].value = char; });
+        const last = Math.min(paste.length, boxes.length) - 1;
+        boxes[last].focus();
+        updateCombined();
+    });
+});
+
+function updateCombined() {
+    combined.value = Array.from(boxes).map(b => b.value).join('');
+}
+
+form.addEventListener('submit', (e) => {
+    updateCombined();
+    if (combined.value.length < 6) {
+        e.preventDefault();
+        shakeBoxes();
+    }
+});
+
+function shakeBoxes() {
+    const boxRow = document.getElementById('otp-boxes');
+    boxRow.classList.add('shake');
+    setTimeout(() => boxRow.classList.remove('shake'), 500);
+}
+
+// Shake + clear on Flask error
+const hasError = document.querySelector('.text-error');
+if (hasError) {
+    shakeBoxes();
+    boxes.forEach(b => b.value = '');
+    boxes[0].focus();
+}
+
+// Countdown timer
+let seconds = 60;
+const countdownEl = document.getElementById('countdown');
+const resendBtn = document.getElementById('resend-btn');
+
+const timer = setInterval(() => {
+    seconds--;
+    const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const secs = String(seconds % 60).padStart(2, '0');
+    countdownEl.textContent = mins + ':' + secs;
+    if (seconds <= 0) {
+        clearInterval(timer);
+        resendBtn.disabled = false;
+        resendBtn.innerHTML = 'Resend OTP';
+    }
+}, 1000);
+
+boxes[0].focus();
+</script>
+</body>
+</html>

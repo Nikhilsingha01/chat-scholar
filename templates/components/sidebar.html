@@ -1,0 +1,84 @@
+```html id="k7w2m5"
+<aside class="fixed top-0 left-0 w-[280px] h-screen bg-slate-950 border-r border-slate-800 z-50 flex flex-col">
+    <!-- Logo -->
+    <div class="mb-10 px-4">
+        <h1 class="text-xl font-bold bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] bg-clip-text text-transparent">
+            Chat Scholar
+        </h1>
+
+        <p class="text-[10px] text-slate-500 tracking-widest uppercase mt-1">
+            Educational AI
+        </p>
+    </div>
+
+    <!-- Menu -->
+    <nav class="flex-1 space-y-2">
+
+        <a href="{{ url_for('home') }}"
+           class="menu-link {% if request.endpoint=='home' %}menu-active{% endif %}">
+            <span class="material-symbols-outlined">home</span>
+            <span>Home</span>
+        </a>
+
+        <a href="{{ url_for('pdf_chat') }}"
+           class="menu-link {% if request.endpoint=='pdf_chat' %}menu-active{% endif %}">
+            <span class="material-symbols-outlined">chat_bubble</span>
+            <span>PDF Chat</span>
+        </a>
+
+        <a href="{{ url_for('essay_rubric') }}"
+           class="menu-link {% if request.endpoint=='essay_rubric' %}menu-active{% endif %}">
+            <span class="material-symbols-outlined">auto_stories</span>
+            <span>Essay Grading</span>
+        </a>
+
+        <a href="{{ url_for('pdf_history') }}"
+           class="menu-link {% if request.endpoint=='pdf_history' %}menu-active{% endif %}">
+            <span class="material-symbols-outlined">history</span>
+            <span>PDF History</span>
+        </a>
+
+        <a href="{{ url_for('essay_history') }}"
+           class="menu-link {% if request.endpoint=='essay_history' %}menu-active{% endif %}">
+            <span class="material-symbols-outlined">description</span>
+            <span>Essay History</span>
+        </a>
+
+        <a href="{{ url_for('profile') }}"
+           class="menu-link {% if request.endpoint=='profile' %}menu-active{% endif %}">
+            <span class="material-symbols-outlined">person</span>
+            <span>Profile</span>
+        </a>
+
+    </nav>
+
+    <!-- Bottom User -->
+    <div class="mt-auto border-t border-slate-800/50 pt-6 space-y-3">
+
+        <a href="{{ url_for('profile') }}"
+           class="flex items-center gap-3 px-4 py-2 hover:bg-slate-800/40 rounded-xl transition">
+
+            <img src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}"
+                 class="w-10 h-10 rounded-full object-cover">
+
+            <div class="overflow-hidden">
+                <p class="text-sm font-semibold text-white truncate">
+                    {{ current_user.full_name }}
+                </p>
+
+                <p class="text-xs text-slate-400 truncate">
+                    {{ current_user.email }}
+                </p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('logout') }}"
+           class="menu-link text-red-400 hover:bg-red-500/10">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Logout</span>
+        </a>
+
+    </div>
+
+</aside>
+```

@@ -1,0 +1,577 @@
+AI Agent Assignment – Submission 
+ 
+Section 1 : BASIC DETAILS 
+ 
+Name: Nikhil Singhal 
+  
+AI Agent Title / Use Case: AI Technical Interview Coach for 
+College Students Seeking ML/Software Internships 
+  
+ 
+ 
+
+SECTION 2: PROBLEM FRAMING  
+  
+1.1. What problem does your AI Agent solve?  
+ 
+Many college students struggle to prepare effectively for technical interviews 
+because they don't know which topics to focus on based on their skill level and target 
+companies. Generic interview prep resources often overwhelm students with too 
+much content or don't provide personalized practice. This AI Agent helps students by 
+generating customized mock interview questions tailored to their experience level 
+(beginner, intermediate, advanced), specific technology stack (Python, ML, data 
+structures, etc.), and target role (ML Engineer, Software Developer, Data Analyst). It 
+acts as a personal interview coach available 24/7.  
+  
+1.2. Why is this agent useful?  
+  
+This agent delivers personalized, on-demand interview preparation that adapts to 
+each student's needs. Unlike static question banks, it can generate fresh questions, 
+provide hints when students are stuck, and explain solutions in detail. For students 
+like me who are actively seeking internships, having targeted practice questions for 
+specific roles and technologies significantly improves preparation efficiency and 
+confidence.  
+  
+1.3. Who is the target user?  
+  
+College students preparing for technical interviews, particularly those seeking 
+internships or entry-level positions in software development, machine learning, or 
+data science roles. This includes students who may not have access to expensive 
+interview prep courses or mock interview services.  
+  
+1.4. What NOT to include?  
+  
+I consciously avoided features like resume writing, company research, behavioral 
+interview prep, or salary negotiation advice to keep the scope focused on technical 
+interview question practice. The agent also doesn't store user data or track progress 
+across sessions in this basic version.  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+
+SECTION 3: 4-LAYER PROMPT  
+DESIGN  
+  
+3.1 INPUT UNDERSTANDING  
+  
+Prompt:  
+"You are an AI interview prep assistant. Your job is to understand what the student needs 
+help with. When a student messages you, identify:  
+1. 
+Their experience level  
+(beginner/intermediate/advanced)  
+2. 
+The topic they want to practice (e.g.,  
+           Python, ML, DSA, System Design)  
+3. 
+The type of questions they want (coding problems, conceptual questions, project-
+based)  
+4. 
+Any specific constraints (time limit, difficulty level)  
+  
+If the input is unclear, ask clarifying questions like: 'What topic would you like to practice?' or 
+'What's your experience level with [topic]?' Examples:  
+User: 'I want to practice ML questions'  
+You identify: Topic = ML, but experience level unclear → Ask: 'Are you a beginner, 
+intermediate, or advanced in ML?'  
+  
+User: 'Give me some hard Python coding problems'  
+You identify: Topic = Python, Type = coding problems, Difficulty = hard, Experience = likely 
+intermediate/advanced"  
+  
+What is this prompt responsible for?  
+This prompt ensures the agent correctly interprets user requests and gathers necessary 
+context (experience level, topic, question type) before generating questions. It handles 
+ambiguous inputs by asking clarifying questions.  
+  
+Example Input + Output:  
+Input: "I need help with machine learning interview prep"  
+Output (Internal Understanding): {topic: "Machine Learning", experience_level:  
+"unknown", question_type: "unknown"}  
+→ Agent asks: "What's your experience level with ML - beginner, intermediate, or 
+advanced?"  
+  
+ 
+ 
+
+3.2 STATE TRACKER  
+  
+Prompt:  
+"Maintain context about the student throughout the conversation: - Current topic 
+being practiced  
+- Experience level  
+- Questions already asked in this session  
+- Whether the student requested hints or solutions  
+- Student's performance indicators  
+(struggling vs. confident)  
+  
+Use this format to track state:  
+{  
+  'topic': 'Machine Learning',  
+  'experience_level': 'intermediate', 
+  'questions_asked': ['Explain gradient descent', 'Difference between L1 and L2 
+  regularization'],  
+  'current_question': 'Explain overfitting and how to prevent it',  
+  'hints_given': 1,  
+  'user_mood': 'struggling' (based on requests for hints)  
+}  
+  
+Adjust your responses based on this state. If the student is struggling, offer encouragement 
+and simplify explanations. If they're doing well, increase difficulty."  
+  
+How does this help the agent "remember"?  
+This prompt creates a memory structure that tracks conversation context. In a basic 
+ChatGPT implementation, this is simulated by including context in each prompt exchange. In 
+a more advanced version, this would use actual state variables or database storage.  
+  
+Did you simulate memory?  
+Yes - by instructing ChatGPT to explicitly reference previous questions and adapt difficulty 
+based on user responses within the same conversation thread.  
+  
+  
+ 
+
+3.3 TASK PLANNER  
+  
+Prompt:  
+"Based on the user's request and current state, follow these steps:  
+  
+Step 1: Validate input  
+- Do I have all necessary info (topic, experience level)?  
+- If not → Ask clarifying questions  
+- If yes → Proceed to Step 2  
+  
+Step 2: Generate appropriate question  
+- Select question difficulty based on experience level  
+- Ensure question hasn't been asked before in this session  
+- Format question clearly with any necessary context  
+  
+Step 3: Present question and wait for response  
+  
+Step 4: Evaluate user response  
+- If user asks for hint → Provide progressive hint (not full answer)  
+- If user asks for solution → Provide detailed explanation  
+- If user answers → Provide feedback and ask if they want another question  
+  
+Step 5: Adjust difficulty  
+- If user struggling → Maintain or decrease difficulty  
+- If user confident → Increase difficulty for next question  
+  
+ 
+ 
+ 
+ 
+
+Example flow:  
+User: 'I'm intermediate in Python, give me a coding problem'  
+ 
+→ Step 1: All info available ✓  
+→ Step 2: Generate intermediate Python coding problem  
+→ Step 3: Present problem  
+→ Step 4: User submits solution → Evaluate  
+→ Step 5: Adjust next question “difficulty” 
+  
+What steps does your agent take internally?  
+The agent follows a structured decision tree: validate input → generate content → present → 
+evaluate → adapt. This ensures consistent, logical responses.  
+  
+Did you use conditional logic?  
+Yes - the agent uses if-then logic (if unclear input → ask questions; if user struggling → 
+provide hints; if doing well → increase difficulty).  
+  
+  
+3.4 OUTPUT GENERATOR  
+  
+Prompt:  
+"Generate clear, helpful responses in this format:  
+  
+For questions:  
+'Here's a [difficulty] [topic] question for you:  
+  
+[Question text]  
+  
+Take your time. Let me know when you're ready to share your answer, or type 'hint' if you 
+need help.'  
+  
+For hints:  
+'Hint: [Progressive hint that guides without giving away the answer]'  
+  
+For solutions:  
+'Great effort! Here's the complete solution:  
+  
+[Detailed explanation with code/concepts]  
+  
+
+Key takeaways:  
+- [Point 1]  
+- [Point 2]  
+  
+Ready for another question?'  
+  
+For feedback:  
+'[Positive reinforcement] Your answer shows [what they got right]. Here's how to improve: 
+[constructive feedback]'  
+  
+Always:  
+- Be encouraging and supportive  
+- Use clear, concise language  
+- Provide actionable next steps  
+- Format code blocks properly  
+- Ask if they want to continue"  
+  
+How does it respond clearly?  
+By using structured templates, the agent maintains consistency and clarity. Each response 
+type has a predefined format that guides the user effectively.  
+  
+Example Output:  
+"Here's an intermediate Machine Learning question for you:  
+  
+Explain the bias-variance tradeoff and how it relates to model performance.  
+Provide an example.  
+  
+Take your time. Let me know when you're ready to share your answer, or type 'hint' if you 
+need help."  
+ 
+ 
+ 
+ 
+
+SECTION 4: CHATGPT EXPLORATION LOG  
+  
+Initial Approach:  
+I started by asking ChatGPT: "Act as an interview prep assistant for ML/Python topics. 
+Generate an intermediate-level machine learning question."  
+  
+Result: ChatGPT generated a good question but didn't maintain context or ask about my 
+experience level.  
+  
+Iteration 1:  
+I refined the prompt: "You are an interview prep assistant. First ask the user about their 
+experience level and topic preferences before generating questions."  
+  
+Result: Better! ChatGPT now asked clarifying questions, but the questions generated weren't 
+consistently appropriate for the stated experience level.  
+  
+Iteration 2:  
+I added more structure: "For intermediate level, ask questions that require understanding 
+concepts with some depth, not just definitions. Examples: 'Explain gradient descent and 
+when it might fail' vs. 'What is gradient descent?'"  
+  
+Result: Much improved. Questions now matched experience levels better.  
+  
+Iteration 3:  
+I added the state tracking instruction: "Keep track of questions you've already asked in this 
+session and don't repeat them. After each answer, provide detailed feedback."  
+  
+Result: ChatGPT started referencing previous questions and providing better feedback.  
+  
+Iteration 4 (Task Planning):  
+I introduced conditional logic: "If the user asks for a hint, give a progressive hint that guides 
+their thinking. If they ask for the solution, provide a complete explanation with examples."  
+  
+Result: The agent now handled hints vs. solutions appropriately.  
+  
+Iteration 5 (Output Formatting):  
+I specified output templates for different response types (questions, hints, solutions, 
+feedback).  
+ 
+
+ Result: Final version had consistent, clear formatting that made the interaction professional 
+and easy to follow.  
+  
+Key Learning:  
+Breaking the agent into 4 distinct layers (Understanding → State → Planning → Output) 
+made it much easier to debug and improve. Each layer could be refined independently.  
+  
+Where I Got Stuck:  
+Initially, ChatGPT would sometimes generate questions that were too easy or too hard 
+despite specifying experience level. I fixed this by providing concrete examples of 
+appropriate questions for each level.  
+  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+SECTION 5: OUTPUT TESTS  
+  
+Test Case 1: Vague Input  
+Input: "Help me with coding"  
+Expected: Agent asks clarifying questions  
+Actual Output: "I'd be happy to help! What programming language would you like to 
+practice? And what's your experience level - beginner, intermediate, or advanced?"  
+Result: ✓ Passed  
+  
+Test Case 2: Specific Request  
+Input: "I'm intermediate in Python, give me a coding problem on lists"  
+Expected: Agent generates appropriate Python list problem  
+Actual Output: "Here's an intermediate Python question: Write a function to find all pairs in a 
+list that sum to a target value. Optimize for time complexity."  
+Result: ✓ Passed  
+  
+Test Case 3: Hint Request  
+Input: User asks "hint" after receiving a question  
+Expected: Agent provides progressive hint, not full solution  
+Actual Output: "Hint: Think about using a hash set to track numbers you've seen. This can 
+help you achieve O(n) time complexity."  
+Result: ✓ Passed  
+  
+Test Case 4: Solution Request  
+Input: User asks "give me the solution"  
+Expected: Agent provides complete detailed explanation  
+Actual Output: [Detailed solution with code and explanation]  
+Result: ✓ Passed  
+  
+Test Case 5: Difficulty Adaptation  
+Input: User struggles (asks for multiple hints)  
+Expected: Next question is slightly easier or same level  
+Actual: Agent maintained same difficulty with more encouraging tone  
+Result: ✓ Mostly passed (could improve by explicitly reducing difficulty)  
+  
+  
+ 
+ 
+
+SECTION 6: REFLECTION  
+  
+6.1. What was the hardest part of this assignment? 
+ 
+The hardest part was getting the agent to consistently maintain context and adapt difficulty 
+levels appropriately. Since ChatGPT doesn't have true persistent memory, I had to explicitly 
+design prompts that instructed it to "remember" previous questions and user performance 
+within a conversation. Initially, the agent would sometimes repeat questions or fail to adjust 
+difficulty when a user was struggling. I spent considerable time iterating on the state tracking 
+prompt, testing different approaches like asking ChatGPT to maintain a JSON-like structure 
+of conversation state. Another challenge was calibrating what "intermediate" vs. "advanced" 
+meant for different topics—my initial prompts were too vague, leading to inconsistent 
+question difficulty. I solved this by providing concrete examples of questions at each level, 
+which significantly improved consistency. 
+ 
+6.2. What part did you enjoy the most? 
+ 
+I really enjoyed the iterative prompt engineering process—seeing how small changes in 
+wording could dramatically improve the agent's behavior. It reminded me of hyperparameter 
+tuning in my ML projects, where systematic experimentation leads to better results. I also 
+loved connecting this to a real problem I face: preparing for technical interviews as an 
+internship-seeker. Building something I'll actually use made the assignment more 
+meaningful. The most satisfying moment was when I successfully implemented the adaptive 
+difficulty system—watching the agent recognize when a user was struggling and provide 
+more encouraging, scaffolded hints felt like a real breakthrough. It was also fascinating to 
+see how the 4-layer architecture (Input Understanding → State Tracker → Task Planner → 
+Output Generator) provided a clear mental model for debugging—when something went 
+wrong, I could pinpoint exactly which layer needed refinement. 
+  
+6.3. If given more time, what would you improve or add? 
+ 
+With more time and technical capability, I would: 
+1. Add actual persistent state storage (database or session management) instead of 
+relying on ChatGPT's conversation memory to track user progress across multiple 
+sessions. 
+ 
+2. Integrate a code execution environment so users can test their solutions in real-
+time and receive immediate feedback on correctness and efficiency. 
+ 
+3. Build a progress tracking system that shows improvement over time with 
+analytics, visualizing topics mastered, areas needing work, and overall readiness 
+scores. 
+ 
+4. Add company-specific question banks (e.g., "Google ML interview prep," 
+"Amazon system design") using web scraping or APIs to provide targeted practice. 
+
+5. Implement spaced repetition algorithms to reinforce concepts the user struggled 
+with, automatically surfacing questions at optimal intervals for retention. 
+ 
+6. Create a web interface with better UX featuring chat history, bookmarked 
+questions, performance dashboards, and the ability to filter questions by topic and 
+difficulty. 
+ 
+7. Add voice interaction for realistic mock interview simulation, allowing users to 
+practice explaining solutions verbally as they would in actual interviews. 
+ 
+8. Build a peer comparison feature showing anonymized performance benchmarks 
+so users can gauge their readiness relative to others preparing for similar roles. 
+ 
+9. Integrate with popular coding platforms like LeetCode or HackerRank to pull real 
+interview questions and track external practice progress in one place. 
+ 
+10. Add an AI interview feedback system that evaluates not just answer correctness, 
+but also communication clarity, problem-solving approach, and interview etiquette. 
+ 
+ 
+6.4. What did you learn about ChatGPT or prompt design? 
+ 
+I learned that effective prompt engineering is about structured thinking, not just clever 
+wording. The 4-layer architecture taught me to separate concerns—input parsing, state 
+management, decision logic, and output formatting—which makes prompts more 
+maintainable and debuggable. Key insights: 
+ 
+• 
+Specificity matters: Vague prompts like "be helpful" produced inconsistent results. 
+Concrete examples and clear criteria ("for intermediate level, ask questions that 
+require applying concepts, not just definitions") worked much better. 
+ 
+• 
+Context is king: Explicitly instructing ChatGPT to maintain and reference 
+conversation state dramatically improved multi-turn interactions. Without this, the 
+agent felt disconnected and repetitive. 
+ 
+• 
+Templates enhance consistency: Providing output format templates ("For 
+questions: 'Here's a [difficulty] [topic] question...'") ensured professional, predictable 
+responses. 
+ 
+• 
+Iterative refinement is essential: My first prompt produced mediocre results. Each 
+iteration—adding examples, refining logic, clarifying edge cases—made substantial 
+improvements. This mirrors my experience in ML where feature engineering and 
+iterative model refinement are crucial. 
+
+• 
+Prompt architecture > Model power: A well-structured prompt using GPT-3.5 can 
+outperform a poorly structured one using GPT-4, similar to how a well-engineered 
+feature set with a simpler ML model often beats a complex model with poor features. 
+ 
+6.5. Did you ever feel stuck? How did you handle it? 
+ 
+Yes, I felt stuck twice: 
+First, when the agent kept generating questions that were too easy for "intermediate" level 
+despite me specifying the difficulty. I initially tried rephrasing the same instruction in different 
+ways, which didn't help. I broke through by stepping back and asking: "How would I, as a 
+human, know if a question is intermediate level?" This led me to provide concrete 
+examples of beginner vs. intermediate vs. advanced questions for the same topic. Once the 
+prompt had these reference points, consistency improved dramatically. This reminded me of 
+debugging my ML models—sometimes you need to inspect the training data (in this case, 
+the examples I was providing) rather than just tweaking the algorithm. 
+ 
+Second, when implementing adaptive difficulty, the agent wasn't reliably detecting user 
+struggle. I realized the issue: my prompt said "if user struggles, reduce difficulty" but didn't 
+define what "struggle" meant. I fixed this by being explicit: "If user requests 2+ hints on a 
+single question, they are struggling. If user requests full solution, they are struggling. If user 
+answers confidently without hints, they are confident." This specificity made the logic work 
+reliably. 
+ 
+My approach to being stuck: Take a break, write down exactly what's going wrong with 
+specific examples, break the problem into smaller pieces, and test each piece 
+independently. This systematic debugging mindset—which I developed through my ML 
+projects—was invaluable for prompt engineering too. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+SECTION 7: HACK VALUE (Optional)  
+  
+Did I go beyond the brief?  
+  
+Yes, in several ways:  
+  
+1. 
+Adaptive Difficulty System: I added logic for the agent to automatically adjust question 
+difficulty based on user performance (requesting hints = struggling, confident answers 
+= increase difficulty). This wasn't explicitly required but makes the agent significantly 
+more useful and personalized.  
+  
+2. 
+Multi-Topic Support: Instead of limiting to one domain, I designed the agent to handle 
+multiple technical topics (Python, Machine Learning, Data Structures, System Design) 
+with appropriate question generation for each. This demonstrates scalability thinking.  
+  
+3. 
+Comprehensive Testing Suite: I created a structured test suite (Section 5) with 5 
+different test cases to validate each component of the agent. This demonstrates 
+engineering rigor and production mindset, not just "it works in one case."  
+  
+4. 
+Real-World Application Thinking: I connected this directly to my actual internship 
+search journey - this agent solves a problem I personally face as a student preparing 
+for technical interviews. I'm planning to actually use and improve this for my own 
+interview prep, which shows genuine investment beyond just completing the 
+assignment.  
+  
+ 
+5. 
+Leveraged Real Project Experience: I drew parallels between this agent architecture 
+and my actual ML/NLP projects (Network Threat Detection with 95%+ accuracy on 50k 
+records, duplicate question detection, sentiment analysis). This shows I can connect 
+theoretical concepts to practical implementation.  
+  
+6. 
+Domain Knowledge Integration: The prompts include nuanced understanding of 
+interview prep challenges (calibrating difficulty, progressive hints, encouraging tone) 
+that come from my own experience as a student actively seeking internships. This isn't 
+generic - it's informed by real needs.  
+  
+7. 
+Iterative Development  
+Documentation: I documented 5 distinct iterations in Section 4, showing my thought 
+process and problem-solving approach. This demonstrates learning agility and the 
+ability to debug and improve systematically.  
+  
+  
+
+CONCLUSION  
+  
+This assignment taught me that building AI agents is about designing good systems, not just 
+writing prompts. The 4-layer architecture provides a reusable framework that makes 
+debugging and improvement much easier. 
+ 
+The hardest part was maintaining context without persistent memory, but solving this taught 
+me creative prompt engineering. The most enjoyable part was the iterative refinement—
+watching each prompt adjustment improve the agent's consistency and reliability. 
+ 
+I learned that effective prompts require specificity and structure. My first attempt was too 
+vague. Adding concrete examples, clear decision logic, and output templates made the 
+agent significantly better. When stuck, I analyzed specific failures and provided clearer 
+criteria. 
+ 
+As someone seeking an ML/AI internship, this exercise forced me to think like a product 
+engineer—considering UX, edge cases, and scalability. I learned that well-designed prompt 
+architecture matters more than clever wording. 
+ 
+With more time, I'd add persistent storage, code execution, analytics, company-specific 
+questions, spaced repetition, a web interface, and voice interaction—transforming this into a 
+production-ready platform. 
+ 
+This isn't just an assignment—it's a tool I'll use and improve during my internship search. 
+Thank you for this challenging and practical project! 
+I look forward to your feedback! 
+  
+

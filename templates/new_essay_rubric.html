@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" id="html-root">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Essay Rubric - Chat Scholar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "background": "#031427","surface-tint": "#adc6ff","outline": "#8c909f",
+                    "secondary": "#d0bcff","primary-container": "#4d8eff","primary": "#adc6ff",
+                    "tertiary-container": "#00a572","on-secondary-container": "#c4abff",
+                    "on-primary": "#002e6a","surface-container-lowest": "#000f21",
+                    "surface-container-low": "#0b1c30","error": "#ffb4ab","error-container": "#93000a",
+                    "surface-container-high": "#1b2b3f","surface": "#031427","tertiary": "#4edea3",
+                    "surface-bright": "#2a3a4f","outline-variant": "#424754",
+                    "surface-container-highest": "#26364a","surface-container": "#102034",
+                    "secondary-container": "#571bc1","on-surface": "#d3e4fe",
+                    "on-surface-variant": "#c2c6d6","on-primary-container": "#00285d",
+                    "on-background": "#d3e4fe"
+                },
+                borderRadius: { DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px" },
+                fontFamily: { headline: ["Plus Jakarta Sans"], body: ["Inter"] }
+            }
+        }
+    }
+</script>
+
+<script>
+function toggleNotif(){
+    document.getElementById("notifBox")
+    .classList.toggle("hidden");
+}
+</script>
+
+<style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    body { font-family: 'Inter', sans-serif; }
+    .font-plus-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .glass-panel { background: rgba(42,58,79,0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    /* Textarea glow on focus */
+    textarea:focus { box-shadow: 0 0 0 3px rgba(173,198,255,0.15); }
+    /* Word count update animation */
+    @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+    .pop { animation: pop 0.2s ease; }
+</style>
+</head>
+
+<body class="bg-background text-on-background font-body selection:bg-primary/30 min-h-screen">
+
+<!-- ✅ Sidebar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/90 backdrop-blur-xl flex flex-col p-6 border-r border-slate-800/15 z-50">
+    <div class="mb-10">
+        <h1 class="text-xl font-bold bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] bg-clip-text text-transparent font-plus-jakarta">
+            Chat Scholar
+        </h1>
+        <p class="text-[10px] uppercase tracking-widest text-slate-500 font-medium mt-1">
+            Educational AI
+        </p>
+    </div>
+
+    <nav class="flex-1 space-y-2">
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 transition-colors font-plus-jakarta text-sm font-medium rounded-full hover:bg-slate-800/50"
+            href="{{ url_for('home') }}">
+            <span class="material-symbols-outlined">home</span> Home
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 transition-colors font-plus-jakarta text-sm font-medium rounded-full hover:bg-slate-800/50"
+            href="{{ url_for('pdf_chat') }}">
+            <span class="material-symbols-outlined">chat_bubble</span> PDF Chat
+        </a>
+        <!-- Active: Essay Grading -->
+        <a class="flex items-center gap-3 bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] text-slate-950 rounded-full px-4 py-2 font-bold font-plus-jakarta text-sm"
+            href="{{ url_for('essay_rubric') }}">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_stories</span> Essay Grading
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 transition-colors font-plus-jakarta text-sm font-medium rounded-full hover:bg-slate-800/50"
+            href="{{ url_for('pdf_history') }}">
+            <span class="material-symbols-outlined">history</span> PDF History
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 transition-colors font-plus-jakarta text-sm font-medium rounded-full hover:bg-slate-800/50"
+            href="{{ url_for('essay_history') }}">
+            <span class="material-symbols-outlined">description</span> Essay History
+        </a>
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5"
+           href="{{ url_for('profile') }}">
+            <span class="material-symbols-outlined text-xl">person</span>
+            <span class="text-sm font-medium">Profile</span>
+        </a>
+    </nav>
+
+     <div class="mt-auto p-6 border-t border-white/10">
+
+        <a href="{{ url_for('profile') }}"
+           class="flex items-center gap-3 mb-6">
+
+            <img src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}"
+                 class="w-12 h-12 rounded-full object-cover">
+
+            <div>
+                <p class="text-white text-sm font-semibold">
+                    {{ current_user.full_name }}
+                </p>
+
+                <p class="text-slate-400 text-xs">
+                    {{ current_user.email }}
+                </p>
+            </div>
+
+        </a>
+
+       <div class="flex justify-center">
+            <a href="{{ url_for('logout') }}"
+               class="flex items-center gap-2 text-slate-400 hover:text-white transition">
+
+                <span class="material-symbols-outlined">logout</span>
+                <span>Logout</span>
+
+            </a>
+        </div>
+
+    </div>
+</aside>
+
+<!-- ✅ Top Navbar -->
+<header class="fixed top-0 right-0 h-16 left-[280px] bg-slate-950/80 backdrop-blur-[20px] flex justify-between items-center px-8 z-40 border-b border-slate-800/15">
+    <div class="flex items-center gap-3">
+        
+        <span class="text-blue-400 font-bold font-plus-jakarta text-lg">Essay Rubric Setup</span>
+    </div>
+    <div class="flex items-center gap-5">
+        <button onclick="toggleDark()" id="dark-toggle" class="text-slate-400 hover:text-blue-300 transition-opacity">
+            <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+        </button>
+        <div class="relative">
+
+        <button onclick="toggleNotif()"
+        class="relative text-slate-400 hover:text-blue-300">
+
+            <span class="material-symbols-outlined text-2xl">
+                notifications
+            </span>
+
+            {% if unread_count > 0 %}
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full">
+                {{ unread_count }}
+            </span>
+            {% endif %}
+
+        </button>
+
+        <!-- Dropdown -->
+        <div id="notifBox"
+        class="hidden absolute right-0 mt-4 w-80 bg-slate-900 border border-slate-700 rounded-2xl shadow-xl p-4 z-50">
+
+            <h3 class="text-white font-bold mb-3">Notifications</h3>
+
+            {% if notifications %}
+
+                {% for n in notifications %}
+                <div class="py-3 border-b border-slate-800">
+
+                    <p class="text-sm text-white">
+                        {{ n.message }}
+                    </p>
+
+                    <p class="text-xs text-slate-400 mt-1">
+                        {{ n.created_at.strftime('%d %b %I:%M %p') }}
+                    </p>
+
+                </div>
+                {% endfor %}
+
+            {% else %}
+
+                <p class="text-slate-400 text-sm">
+                    No notifications
+                </p>
+
+            {% endif %}
+
+        </div>
+
+        </div>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('profile') }}">
+            <img
+            src="{{ url_for('static', filename='uploads/' + (current_user.profile_image or 'default.png')) }}"
+            class="w-10 h-10 rounded-full object-cover border-2 border-blue-400 hover:scale-105 transition cursor-pointer">
+        </a>
+        {% endif %}
+    </div>
+</header>
+
+<!-- ✅ Main Content -->
+<main class="ml-[280px] pt-20 px-12 pb-16 min-h-screen">
+    <div class="max-w-4xl mx-auto">
+
+        <!-- Page Header -->
+        <div class="mb-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-highest rounded-full mb-4">
+                <span class="material-symbols-outlined text-primary text-sm">tune</span>
+                <span class="text-xs font-bold text-on-surface-variant tracking-wider uppercase">Step 1 of 2</span>
+            </div>
+            <h1 class="text-3xl font-extrabold font-plus-jakarta text-on-surface mb-2">
+                Configure Your Grading Rubric
+            </h1>
+            <p class="text-on-surface-variant text-sm leading-relaxed max-w-xl">
+                Define the evaluation criteria that the AI will use to assess your essay. A detailed rubric produces more accurate and useful feedback.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- LEFT: Rubric Form (2/3 width) -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- ✅ Error message -->
+                {% if error %}
+                <div class="flex items-center gap-3 bg-error/10 border border-error/20 rounded-xl px-5 py-4">
+                    <span class="material-symbols-outlined text-error text-sm">error</span>
+                    <p class="text-error text-sm font-medium">{{ error }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Rubric Form Card -->
+                <div class="glass-panel rounded-lg border border-outline-variant/10 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-outline-variant/10 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-sm">edit_note</span>
+                            <span class="text-sm font-bold text-on-surface uppercase tracking-wider">Rubric Definition</span>
+                        </div>
+                        <!-- Quick templates -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-medium">Quick fill:</span>
+                            <button onclick="fillTemplate('academic')"
+                                class="text-xs px-3 py-1 rounded-full bg-surface-container-highest border border-outline-variant/20 text-primary hover:bg-primary/10 transition-colors font-medium">
+                                Academic
+                            </button>
+                            <button onclick="fillTemplate('creative')"
+                                class="text-xs px-3 py-1 rounded-full bg-surface-container-highest border border-outline-variant/20 text-secondary hover:bg-secondary/10 transition-colors font-medium">
+                                Creative
+                            </button>
+                            <button onclick="fillTemplate('technical')"
+                                class="text-xs px-3 py-1 rounded-full bg-surface-container-highest border border-outline-variant/20 text-tertiary hover:bg-tertiary/10 transition-colors font-medium">
+                                Technical
+                            </button>
+                        </div>
+                    </div>
+
+                    <form action="/essay_grading" method="post" enctype="multipart/form-data" id="rubric-form">
+                        <div class="p-6">
+                            <label class="block text-sm font-semibold text-on-surface-variant mb-3">
+                                Grading Rubric
+                                <span class="text-error ml-1">*</span>
+                            </label>
+                            <div class="relative">
+                                <textarea
+                                    id="rubric-textarea"
+                                    name="essay_rubric"
+                                    required
+                                    rows="12"
+                                    oninput="updateRubricCount(this)"
+                                    class="w-full bg-surface-container-highest border-2 border-outline-variant/20 rounded-xl p-5 text-on-surface placeholder:text-slate-600 focus:border-primary focus:outline-none transition-all resize-y font-body text-sm leading-relaxed"
+                                    placeholder="Example:&#10;Grade on the following criteria (total 10 points):&#10;&#10;1. Content & Argument (4 points)&#10;   - Clear thesis and supporting evidence&#10;   - Logical flow and coherence&#10;&#10;2. Structure (3 points)&#10;   - Introduction, body paragraphs, conclusion&#10;   - Transitions between sections&#10;&#10;3. Grammar & Language (3 points)&#10;   - Correct grammar and spelling&#10;   - Appropriate academic tone"></textarea>
+                                <!-- Character counter -->
+                                <div class="absolute bottom-3 right-3 bg-slate-950/60 backdrop-blur px-3 py-1 rounded-full border border-outline-variant/20">
+                                    <span id="rubric-count" class="text-[10px] font-medium text-slate-400">0 chars</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2">
+                                Tip: Include point values, specific criteria, and examples for best results.
+                            </p>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="px-6 pb-6">
+                            <button type="submit"
+                                class="w-full py-4 rounded-full bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] text-slate-950 font-bold text-sm uppercase tracking-widest hover:shadow-[0_0_20px_rgba(173,198,255,0.3)] transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+                                <span class="material-symbols-outlined">arrow_forward</span>
+                                Continue to Essay Submission
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- RIGHT: Tips Panel (1/3 width) -->
+            <div class="space-y-5">
+
+                <!-- Progress indicator -->
+                <div class="glass-panel rounded-lg border border-outline-variant/10 p-5">
+                    <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Progress</p>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-[#adc6ff] to-[#4d8eff] flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-slate-950 text-sm" style="font-variation-settings: 'FILL' 1;">edit</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-on-surface">Set Rubric</p>
+                                <p class="text-xs text-slate-500">Currently here</p>
+                            </div>
+                        </div>
+                        <div class="ml-3.5 w-0.5 h-4 bg-outline-variant/20"></div>
+                        <div class="flex items-center gap-3 opacity-40">
+                            <div class="w-7 h-7 rounded-full bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-on-surface-variant text-sm">upload_file</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-on-surface">Submit Essay</p>
+                                <p class="text-xs text-slate-500">Next step</p>
+                            </div>
+                        </div>
+                        <div class="ml-3.5 w-0.5 h-4 bg-outline-variant/20"></div>
+                        <div class="flex items-center gap-3 opacity-40">
+                            <div class="w-7 h-7 rounded-full bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-on-surface-variant text-sm">grade</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-on-surface">Get Results</p>
+                                <p class="text-xs text-slate-500">AI feedback</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips Card -->
+                <div class="glass-panel rounded-lg border border-outline-variant/10 p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-tertiary text-sm">lightbulb</span>
+                        <p class="text-xs font-bold uppercase tracking-widest text-tertiary">Rubric Tips</p>
+                    </div>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-2 text-xs text-on-surface-variant leading-relaxed">
+                            <span class="w-1.5 h-1.5 rounded-full bg-tertiary mt-1.5 flex-shrink-0"></span>
+                            Be specific about point values for each criterion
+                        </li>
+                        <li class="flex items-start gap-2 text-xs text-on-surface-variant leading-relaxed">
+                            <span class="w-1.5 h-1.5 rounded-full bg-tertiary mt-1.5 flex-shrink-0"></span>
+                            Include the total score out of 10
+                        </li>
+                        <li class="flex items-start gap-2 text-xs text-on-surface-variant leading-relaxed">
+                            <span class="w-1.5 h-1.5 rounded-full bg-tertiary mt-1.5 flex-shrink-0"></span>
+                            Mention academic level (high school, university, etc.)
+                        </li>
+                        <li class="flex items-start gap-2 text-xs text-on-surface-variant leading-relaxed">
+                            <span class="w-1.5 h-1.5 rounded-full bg-tertiary mt-1.5 flex-shrink-0"></span>
+                            Add subject-specific requirements if needed
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Example rubric card -->
+                <div class="glass-panel rounded-lg border border-primary/10 p-5 bg-primary/5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="material-symbols-outlined text-primary text-sm">auto_awesome</span>
+                        <p class="text-xs font-bold uppercase tracking-widest text-primary">AI Tip</p>
+                    </div>
+                    <p class="text-xs text-on-surface-variant leading-relaxed">
+                        The more detail you provide in your rubric, the more precise and actionable the AI grading feedback will be. Vague rubrics produce generic results.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Decoration blobs -->
+<div class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+<div class="fixed top-[-5%] left-[20%] w-[300px] h-[300px] bg-secondary/5 rounded-full blur-[80px] pointer-events-none -z-10"></div>
+
+<script>
+// ✅ Dark mode
+const html = document.getElementById('html-root');
+const themeIcon = document.getElementById('theme-icon');
+if (localStorage.getItem('darkMode') === 'false') {
+    html.classList.remove('dark');
+    if (themeIcon) themeIcon.textContent = 'light_mode';
+}
+function toggleDark() {
+    const isDark = html.classList.toggle('dark');
+    localStorage.setItem('darkMode', isDark);
+    if (themeIcon) themeIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
+}
+
+// ✅ Character counter
+function updateRubricCount(textarea) {
+    const counter = document.getElementById('rubric-count');
+    const len = textarea.value.length;
+    counter.textContent = len + ' chars';
+    counter.classList.add('pop');
+    setTimeout(() => counter.classList.remove('pop'), 200);
+}
+
+// ✅ Quick template fill
+const templates = {
+    academic: `Grade this academic essay out of 10 points using these criteria:
+
+1. Thesis & Argument (3 points)
+   - Clear, specific thesis statement
+   - Well-supported central argument
+   - Logical progression of ideas
+
+2. Evidence & Research (3 points)
+   - Use of credible sources and citations
+   - Relevant examples and data
+   - Proper integration of evidence
+
+3. Structure & Organization (2 points)
+   - Clear introduction, body, and conclusion
+   - Smooth transitions between paragraphs
+
+4. Grammar & Academic Tone (2 points)
+   - Correct grammar, spelling, punctuation
+   - Formal academic writing style
+
+Total: 10 points`,
+
+    creative: `Grade this creative essay out of 10 points:
+
+1. Originality & Voice (4 points)
+   - Unique perspective and creative ideas
+   - Distinctive authorial voice
+   - Engaging and memorable content
+
+2. Narrative & Flow (3 points)
+   - Compelling storytelling
+   - Rhythm and pacing
+   - Emotional impact
+
+3. Language & Style (3 points)
+   - Vivid imagery and descriptive language
+   - Varied sentence structure
+   - Literary devices used effectively
+
+Total: 10 points`,
+
+    technical: `Grade this technical essay out of 10 points:
+
+1. Technical Accuracy (4 points)
+   - Correct use of terminology
+   - Factual accuracy and precision
+   - Depth of technical understanding
+
+2. Clarity of Explanation (3 points)
+   - Complex ideas explained clearly
+   - Logical step-by-step reasoning
+   - Appropriate use of examples
+
+3. Structure & Presentation (3 points)
+   - Clear problem statement and solution
+   - Organized sections with headings
+   - Proper citations and references
+
+Total: 10 points`
+};
+
+function fillTemplate(type) {
+    const ta = document.getElementById('rubric-textarea');
+    ta.value = templates[type];
+    updateRubricCount(ta);
+    ta.focus();
+}
+
+// Init counter
+updateRubricCount(document.getElementById('rubric-textarea'));
+</script>
+
+</body>
+</html>

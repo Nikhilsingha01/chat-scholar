@@ -1,0 +1,445 @@
+
+<!DOCTYPE html>
+<html class="dark" lang="en" id="html-root">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chat Scholar - PDF Upload</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "background": "#031427","surface-tint": "#adc6ff","outline": "#8c909f",
+                    "secondary": "#d0bcff","primary-container": "#4d8eff","primary": "#adc6ff",
+                    "tertiary-container": "#00a572","on-secondary-container": "#c4abff",
+                    "on-primary": "#002e6a","surface-container-lowest": "#000f21",
+                    "surface-container-low": "#0b1c30","error": "#ffb4ab",
+                    "surface-container-high": "#1b2b3f","surface": "#031427","tertiary": "#4edea3",
+                    "surface-bright": "#2a3a4f","outline-variant": "#424754",
+                    "surface-container-highest": "#26364a","surface-container": "#102034",
+                    "secondary-container": "#571bc1","on-surface": "#d3e4fe",
+                    "on-surface-variant": "#c2c6d6","on-primary-container": "#00285d",
+                    "on-background": "#d3e4fe"
+                },
+                borderRadius: { DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px" },
+                fontFamily: { headline: ["Plus Jakarta Sans"], body: ["Inter"] }
+            }
+        }
+    }
+</script>
+
+<script>
+function toggleNotif(){
+    document.getElementById("notifBox")
+    .classList.toggle("hidden");
+}
+</script>
+
+<style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    body { font-family: 'Inter', sans-serif; background-color: #031427; }
+    .font-plus-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .drag-over { border-color: #adc6ff !important; background-color: #0b1c30 !important; }
+</style>
+</head>
+
+<body class="bg-background text-on-background font-body selection:bg-primary/30 min-h-screen">
+
+<!-- ✅ Sidebar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/90 backdrop-blur-xl flex flex-col p-6 border-r border-slate-800/15 z-50">
+   
+    <!-- Logo -->
+    <div class="mb-10">
+        <h1 class="text-xl font-bold bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] bg-clip-text text-transparent font-plus-jakarta">
+            Chat Scholar
+        </h1>
+        <p class="text-[10px] uppercase tracking-widest text-slate-500 font-medium mt-1">
+            Educational AI
+        </p>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 space-y-2">
+
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5"
+           href="{{ url_for('home') }}">
+            <span class="material-symbols-outlined text-xl">home</span>
+            <span class="text-sm font-medium">Home</span>
+        </a>
+
+        <a class="flex items-center gap-3 bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] text-slate-950 rounded-full px-4 py-2 font-bold"
+           href="{{ url_for('pdf_chat') }}">
+            <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1;">
+                chat_bubble
+            </span>
+            <span class="text-sm">PDF Chat</span>
+        </a>
+
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5"
+           href="{{ url_for('essay_rubric') }}">
+            <span class="material-symbols-outlined text-xl">auto_stories</span>
+            <span class="text-sm font-medium">Essay Grading</span>
+        </a>
+
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5"
+           href="{{ url_for('pdf_history') }}">
+            <span class="material-symbols-outlined text-xl">history</span>
+            <span class="text-sm font-medium">PDF History</span>
+        </a>
+
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5"
+           href="{{ url_for('essay_history') }}">
+            <span class="material-symbols-outlined text-xl">description</span>
+            <span class="text-sm font-medium">Essay History</span>
+        </a>
+
+        <a class="flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5"
+           href="{{ url_for('profile') }}">
+            <span class="material-symbols-outlined text-xl">person</span>
+            <span class="text-sm font-medium">Profile</span>
+        </a>
+
+    </nav>
+
+    <!-- Bottom Section -->
+    <div class="pt-6 border-t border-white/10">
+
+        <!-- User -->
+        <a href="{{ url_for('profile') }}"
+           class="flex items-center gap-3 hover:opacity-90 transition">
+
+            <img
+            src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}"
+            class="w-12 h-12 rounded-full object-cover border border-blue-400">
+
+            <div class="min-w-0">
+                <p class="text-white font-semibold text-sm truncate">
+                    {{ current_user.full_name }}
+                </p>
+
+                <p class="text-slate-400 text-xs truncate max-w-[160px]">
+                    {{ current_user.email }}
+                </p>
+            </div>
+
+        </a>
+
+        <!-- Space -->
+        <div class="h-6"></div>
+
+        <!-- Logout -->
+        <div class="flex justify-center">
+            <a href="{{ url_for('logout') }}"
+               class="flex items-center gap-2 text-slate-400 hover:text-white transition">
+
+                <span class="material-symbols-outlined">logout</span>
+                <span>Logout</span>
+
+            </a>
+        </div>
+
+    </div>
+
+</aside>
+
+<!-- ✅ Top Navbar -->
+<header class="fixed top-0 right-0 h-16 left-[280px] bg-slate-950/80 backdrop-blur-[20px] flex justify-between items-center px-8 z-40 border-b border-slate-800/15">
+    <div class="flex items-center gap-2">
+        <span class="text-blue-400 font-bold font-plus-jakarta text-lg">PDF Upload Workspace</span>
+    </div>
+
+    <div class="flex items-center gap-5">
+
+        <!-- Dark mode toggle -->
+        <button onclick="toggleDark()" id="dark-toggle"
+            class="text-slate-400 hover:text-blue-300 transition-opacity">
+            <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+        </button>
+
+        <!-- Notification -->
+        <div class="relative">
+
+        <button onclick="toggleNotif()"
+        class="relative text-slate-400 hover:text-blue-300">
+
+            <span class="material-symbols-outlined text-2xl">
+                notifications
+            </span>
+
+            {% if unread_count > 0 %}
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full">
+                {{ unread_count }}
+            </span>
+            {% endif %}
+
+        </button>
+
+        <!-- Dropdown -->
+        <div id="notifBox"
+        class="hidden absolute right-0 mt-4 w-80 bg-slate-900 border border-slate-700 rounded-2xl shadow-xl p-4 z-50">
+
+            <h3 class="text-white font-bold mb-3">Notifications</h3>
+
+            {% if notifications %}
+
+                {% for n in notifications %}
+                <div class="py-3 border-b border-slate-800">
+
+                    <p class="text-sm text-white">
+                        {{ n.message }}
+                    </p>
+
+                    <p class="text-xs text-slate-400 mt-1">
+                        {{ n.created_at.strftime('%d %b %I:%M %p') }}
+                    </p>
+
+                </div>
+                {% endfor %}
+
+            {% else %}
+
+                <p class="text-slate-400 text-sm">
+                    No notifications
+                </p>
+
+            {% endif %}
+
+        </div>
+
+        </div>
+
+        <!-- User Avatar -->
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('profile') }}">
+            <img
+            src="{{ url_for('static', filename='uploads/' + (current_user.profile_image or 'default.png')) }}"
+            class="w-10 h-10 rounded-full object-cover border-2 border-blue-400 hover:scale-105 transition cursor-pointer">
+        </a>
+        {% endif %}
+
+    </div>
+</header>
+
+<!-- ✅ Main Content -->
+<main class="ml-[280px] pt-16 min-h-screen bg-surface">
+    <div class="max-w-6xl mx-auto p-12">
+
+        <!-- Page Header -->
+        <div class="mb-12 text-center">
+            <h2 class="text-4xl font-extrabold font-plus-jakarta bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] bg-clip-text text-transparent mb-4">
+                Chat with your documents
+            </h2>
+            <p class="text-on-surface-variant text-lg">
+                Upload PDF, images, Word docs or text files to begin your scholarly analysis.
+            </p>
+        </div>
+
+        <!-- ✅ Error Message -->
+        {% if error %}
+        <div class="mb-8 flex items-center gap-3 bg-error/10 border border-error/20 rounded-xl px-5 py-4 max-w-2xl mx-auto">
+            <span class="material-symbols-outlined text-error">error</span>
+            <p class="text-error text-sm font-medium">{{ error }}</p>
+        </div>
+        {% endif %}
+
+        <!-- ✅ Upload Form -->
+        <form action="/process" method="post" enctype="multipart/form-data" id="upload-form">
+
+            <!-- Drop Zone -->
+            <div class="relative group" id="drop-zone">
+                <div class="absolute inset-0 bg-secondary/5 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+
+                <div class="relative bg-surface-container-low border-2 border-dashed border-outline-variant/30 rounded-lg p-16 flex flex-col items-center justify-center transition-all hover:border-primary/50 hover:bg-surface-container-lowest cursor-pointer"
+                    id="drop-area" onclick="document.getElementById('file-input').click()">
+
+                    <!-- Upload Icon -->
+                    <div class="w-20 h-20 bg-gradient-to-br from-primary to-primary-container rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-primary/20" id="upload-icon">
+                        <span class="material-symbols-outlined text-slate-950 text-4xl" style="font-variation-settings: 'FILL' 1;">cloud_upload</span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold font-plus-jakarta mb-2" id="drop-title">Drag &amp; drop your file here</h3>
+                    <p class="text-on-surface-variant mb-8 font-medium" id="drop-subtitle">or click to browse your local storage</p>
+
+                    <!-- Format pills -->
+                    <div class="flex gap-3 mb-10">
+                        <span class="px-4 py-1.5 bg-surface-container-highest rounded-full text-xs font-semibold tracking-wider text-primary border border-outline-variant/10">PDF</span>
+                        <span class="px-4 py-1.5 bg-surface-container-highest rounded-full text-xs font-semibold tracking-wider text-tertiary border border-outline-variant/10">DOCX</span>
+                        <span class="px-4 py-1.5 bg-surface-container-highest rounded-full text-xs font-semibold tracking-wider text-secondary border border-outline-variant/10">PNG</span>
+                        <span class="px-4 py-1.5 bg-surface-container-highest rounded-full text-xs font-semibold tracking-wider text-on-surface-variant border border-outline-variant/10">JPG</span>
+                        <span class="px-4 py-1.5 bg-surface-container-highest rounded-full text-xs font-semibold tracking-wider text-on-surface-variant border border-outline-variant/10">TXT</span>
+                    </div>
+
+                    <!-- Hidden file input -->
+                    <input type="file" id="file-input" name="pdf_docs" multiple
+                        accept=".pdf,.jpg,.jpeg,.png,.txt,.docx"
+                        class="hidden" onchange="handleFileSelect(this)"/>
+
+                    <!-- Selected file name display -->
+                    <div id="file-name-display" class="hidden mb-6 px-6 py-3 bg-surface-container rounded-xl border border-primary/20 text-primary font-medium text-sm">
+                        📄 <span id="file-name-text"></span>
+                    </div>
+
+                    <!-- Process Button -->
+                    <button type="submit" id="process-btn"
+                        class="bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] text-slate-950 font-bold px-10 py-4 rounded-full shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform active:scale-95">
+                        Process Document
+                    </button>
+
+                    <!-- Loading state (hidden by default) -->
+                    <div id="loading-state" class="hidden mt-4 flex items-center gap-3 text-primary">
+                        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        <span class="font-medium">Processing your document...</span>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- ✅ Recent Documents Section -->
+        <section class="mt-20">
+            <div class="flex items-center justify-between mb-8">
+                <h4 class="text-xl font-bold font-plus-jakarta flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">history</span>
+                    Recent Documents
+                </h4>
+                <a href="{{ url_for('pdf_history') }}"
+                    class="text-sm font-semibold text-primary hover:underline underline-offset-4">
+                    View all history
+                </a>
+            </div>
+
+            {% if user_pdfs %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for pdf in user_pdfs[:3] %}
+                <div class="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10 hover:bg-surface-container-highest transition-colors group">
+                    <div class="flex items-start justify-between mb-6">
+                        <!-- File type icon -->
+                        {% set ext = pdf.filename.rsplit('.', 1)[-1].lower() if '.' in pdf.filename else 'pdf' %}
+                        {% if ext == 'pdf' %}
+                        <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">description</span>
+                        </div>
+                        {% elif ext in ['jpg', 'jpeg', 'png'] %}
+                        <div class="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">image</span>
+                        </div>
+                        {% elif ext == 'docx' %}
+                        <div class="w-12 h-12 bg-tertiary/10 rounded-xl flex items-center justify-center text-tertiary">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">article</span>
+                        </div>
+                        {% else %}
+                        <div class="w-12 h-12 bg-outline/10 rounded-xl flex items-center justify-center text-on-surface-variant">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">text_snippet</span>
+                        </div>
+                        {% endif %}
+
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">
+                            {{ pdf.uploaded_at.strftime('%b %d, %Y') }}
+                        </span>
+                    </div>
+
+                    <h5 class="font-bold text-lg mb-1 truncate" title="{{ pdf.filename }}">{{ pdf.filename }}</h5>
+                    <p class="text-xs text-on-surface-variant mb-6 italic">
+                        {{ pdf.chats | length }} messages
+                    </p>
+
+                    <div class="flex gap-2">
+
+                        <!-- Open Chat -->
+                        <a href="{{ url_for('load_pdf_chat', pdf_id=pdf.id) }}"
+                            class="flex-1 py-3 rounded-xl bg-surface-container-highest border border-primary/20 text-primary font-bold text-sm text-center hover:bg-primary hover:text-slate-950 transition-all">
+                            Open Chat
+                        </a>
+
+                        <!-- Share -->
+                        <a href="/share_chat/{{ pdf.id }}"
+                            class="px-4 py-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center">
+                            🔗
+                        </a>
+
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <!-- Empty state -->
+            <div class="text-center py-16 border-2 border-dashed border-outline-variant/20 rounded-2xl">
+                <span class="material-symbols-outlined text-6xl text-on-surface-variant/30 mb-4 block">folder_open</span>
+                <p class="text-on-surface-variant font-semibold text-lg">No documents uploaded yet</p>
+                <p class="text-on-surface-variant/60 text-sm mt-2">Upload your first document above to get started</p>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <!-- Decorative blobs -->
+    <div class="fixed -bottom-20 -right-20 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+    <div class="fixed top-1/4 -left-20 w-[300px] h-[300px] bg-secondary/5 blur-[100px] rounded-full pointer-events-none -z-10"></div>
+</main>
+
+<script>
+// ✅ Dark mode
+const html = document.getElementById('html-root');
+const themeIcon = document.getElementById('theme-icon');
+if (localStorage.getItem('darkMode') === 'false') {
+    html.classList.remove('dark');
+    if (themeIcon) themeIcon.textContent = 'light_mode';
+}
+function toggleDark() {
+    const isDark = html.classList.toggle('dark');
+    localStorage.setItem('darkMode', isDark);
+    if (themeIcon) themeIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
+}
+
+// ✅ File select handler
+function handleFileSelect(input) {
+    if (input.files.length > 0) {
+        const names = Array.from(input.files).map(f => f.name).join(', ');
+        document.getElementById('file-name-text').textContent = names;
+        document.getElementById('file-name-display').classList.remove('hidden');
+        document.getElementById('drop-title').textContent = 'File selected!';
+        document.getElementById('drop-subtitle').textContent = 'Click Process Document to continue';
+    }
+}
+
+// ✅ Drag and drop
+const dropArea = document.getElementById('drop-area');
+const fileInput = document.getElementById('file-input');
+
+['dragenter', 'dragover'].forEach(e => {
+    dropArea.addEventListener(e, (ev) => {
+        ev.preventDefault();
+        dropArea.classList.add('drag-over');
+    });
+});
+['dragleave', 'drop'].forEach(e => {
+    dropArea.addEventListener(e, (ev) => {
+        ev.preventDefault();
+        dropArea.classList.remove('drag-over');
+    });
+});
+dropArea.addEventListener('drop', (ev) => {
+    const files = ev.dataTransfer.files;
+    if (files.length > 0) {
+        fileInput.files = files;
+        handleFileSelect(fileInput);
+    }
+});
+
+// ✅ Show loading on submit
+document.getElementById('upload-form').addEventListener('submit', () => {
+    document.getElementById('process-btn').classList.add('hidden');
+    document.getElementById('loading-state').classList.remove('hidden');
+});
+</script>
+
+</body>
+</html>
