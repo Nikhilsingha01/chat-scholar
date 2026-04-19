@@ -190,7 +190,15 @@ def generate_otp():
     return str(random.randint(100000, 999999))
 
 def send_otp_email(email, otp, full_name):
+    # ✅ Check if we're on Railway (no SMTP available)
+    if not os.environ.get('MAIL_USERNAME') or not os.environ.get('MAIL_PASSWORD'):
+        print("Mail not configured — skipping email")
+        return False
+
     try:
+        import socket
+        socket.setdefaulttimeout(5)  # ✅ 5 second timeout max
+
         msg = Message(
             subject="Chat Scholar - Email Verification OTP",
             sender=app.config['MAIL_USERNAME'],
@@ -210,16 +218,15 @@ def send_otp_email(email, otp, full_name):
                 </span>
             </div>
             <p style="color:#8c909f;">This code expires in 10 minutes.</p>
-            <p style="color:#8c909f;font-size:12px;">
-                If you didn't request this, ignore this email.
-            </p>
         </div>
         """
         mail.send(msg)
         return True
     except Exception as e:
-        print(f"❌ Email send failed: {str(e)}")
+        print(f"Email failed: {str(e)}")
         return False
+    finally:
+        socket.setdefaulttimeout(None)  # ✅ Reset timeout
 
 def validate_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -564,19 +571,14 @@ def signup():
         confirm_password = request.form.get('confirm_password', '')
         dob_str = request.form.get('date_of_birth', '')
 
-        # ✅ Validate all fields
         if not all([full_name, username, email, password, dob_str]):
             return render_template('signup.html', error="All fields are required.")
-
         if len(full_name) < 2:
             return render_template('signup.html', error="Please enter your full name.")
-
         if len(username) < 3:
             return render_template('signup.html', error="Username must be at least 3 characters.")
-
         if not validate_email(email):
             return render_template('signup.html', error="Please enter a valid email address.")
-
         if password != confirm_password:
             return render_template('signup.html', error="Passwords do not match.")
 
@@ -590,7 +592,6 @@ def signup():
 
         if User.query.filter_by(email=email).first():
             return render_template('signup.html', error="Email already registered.")
-
         if User.query.filter_by(username=username).first():
             return render_template('signup.html', error="Username already taken.")
 
@@ -598,43 +599,45 @@ def signup():
         otp = generate_otp()
         otp_expiry = datetime.datetime.now() + datetime.timedelta(minutes=10)
 
-        # ✅ Store in flask session temporarily
-        session['pending_user'] = {
-            'full_name': full_name,
-            'username': username,
-            'email': email,
-            'password': bcrypt.generate_password_hash(password).decode('utf-8'),
-            'date_of_birth': dob_str,
-            'otp': otp,
-            'otp_expiry': otp_expiry.isoformat()
-        }
-
-        # ✅ Try to send OTP email but don't block signup if it fails
+        # ✅ Try sending email with short timeout
         sent = send_otp_email(email, otp, full_name)
 
         if sent:
-            # Email sent successfully — go to OTP page
+            # ✅ Email worked — store in session and go to OTP page
+            session['pending_user'] = {
+                'full_name': full_name,
+                'username': username,
+                'email': email,
+                'password': bcrypt.generate_password_hash(password).decode('utf-8'),
+                'date_of_birth': dob_str,
+                'otp': otp,
+                'otp_expiry': otp_expiry.isoformat()
+            }
             return redirect('/verify_otp')
         else:
-            # ✅ Email failed — create user directly without OTP verification
-            # This happens when SMTP is blocked (common on Railway free tier)
-            print(f"Email failed for {email} — creating user without OTP")
+            # ✅ Email failed (Railway blocks SMTP)
+            # Create user directly and auto-verify
+            try:
+                dob = datetime.datetime.strptime(dob_str, '%Y-%m-%d').date()
+            except ValueError:
+                dob = None
+
             try:
                 new_user = User(
                     full_name=full_name,
                     username=username,
                     email=email,
                     password=bcrypt.generate_password_hash(password).decode('utf-8'),
-                    date_of_birth=datetime.datetime.strptime(dob_str, '%Y-%m-%d').date(),
-                    is_verified=True  # ✅ auto-verify since email failed
+                    date_of_birth=dob,
+                    is_verified=True  # ✅ auto verify
                 )
                 db.session.add(new_user)
                 db.session.commit()
                 login_user(new_user)
-                session.pop('pending_user', None)
                 return redirect('/')
             except Exception as e:
-                print(f"User creation failed: {str(e)}")
+                db.session.rollback()
+                print(f"User creation error: {str(e)}")
                 return render_template('signup.html',
                                        error=f"Signup failed: {str(e)}")
 
