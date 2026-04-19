@@ -8,13 +8,7 @@ from flask import Flask, render_template, request, redirect, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_bcrypt import Bcrypt
-from langchain.schema import SystemMessage, HumanMessage
-
-from langchain_text_splitters import CharacterTextSplitter
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationalRetrievalChain
-from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_groq import ChatGroq
 
 from flask_mail import Mail, Message
@@ -48,7 +42,12 @@ app.config['MAIL_DEFAULT_SENDER'] = 'singhalnikhil010@gmail.com'
 mail = Mail(app)
 
 app.config['SECRET_KEY'] = 'chatscholar_secret_key_2024'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chatscholar.db'
+import os
+
+# ✅ Replace SQLite with this
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL', 'sqlite:///chatscholar.db'
+).replace('postgres://', 'postgresql://')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -283,13 +282,15 @@ llm = ChatGroq(
 # HELPER FUNCTIONS
 # =====================
 
+# ✅ Global PDF text storage (replaces vectorstore)
+pdf_text_store = {}  # { session_name: full_text }
+
 def get_pdf_text(pdf_docs):
+    """Extract text from PDF files using PyMuPDF"""
     text = ""
     for pdf in pdf_docs:
-        filename = os.path.join(DATA_DIR, pdf.filename)
         pdf_text = ""
         try:
-            # ✅ Read file bytes
             pdf.seek(0)
             pdf_bytes = pdf.read()
             doc = fitz.open(stream=pdf_bytes, filetype="pdf")
@@ -302,51 +303,88 @@ def get_pdf_text(pdf_docs):
         except Exception as e:
             pdf_text = f"Could not extract text: {str(e)}"
 
+        # Save to file as before
+        filename = os.path.join(DATA_DIR, pdf.filename)
         with open(filename, "w", encoding="utf-8") as f:
             f.write(pdf_text)
+
     return text
 
 
 def get_text_chunks(text):
-    splitter = CharacterTextSplitter(
-        separator="\n", chunk_size=1000,
-        chunk_overlap=200, length_function=len
-    )
-    return splitter.split_text(text)
+    """Split text into chunks of 1000 chars with 200 overlap"""
+    chunks = []
+    chunk_size = 1000
+    overlap = 200
+    start = 0
+    while start < len(text):
+        end = start + chunk_size
+        chunks.append(text[start:end])
+        start += chunk_size - overlap
+    return chunks
+
 
 def get_vectorstore(text_chunks):
+    """
+    No longer uses FAISS or SentenceTransformer.
+    Just joins chunks and stores as plain text.
+    Returns the full text string instead of a vectorstore object.
+    """
     if not text_chunks:
         raise ValueError("No text found in the uploaded PDF.")
-    try:
-        embeddings = SentenceTransformerEmbeddings(
-            model_name="all-MiniLM-L6-v2"
-        )
-        return FAISS.from_texts(texts=text_chunks, embedding=embeddings)
-    except Exception as e:
-        raise ValueError(f"Embedding failed: {str(e)}")
+    return "\n".join(text_chunks)
+
 
 def get_conversation_chain(vectorstore):
-    memory = ConversationBufferMemory(
-        memory_key="chat_history",
-        return_messages=True
-    )
-    return ConversationalRetrievalChain.from_llm(
-        llm=llm,
-        retriever=vectorstore.as_retriever(),
-        memory=memory
-    )
+    """
+    No longer uses LangChain chains.
+    Returns the raw text so we can pass it to Groq directly.
+    """
+    return vectorstore  # just return the text
 
-ALLOWED_EXTENSIONS = {'pdf', 'jpg', 'jpeg', 'png', 'txt', 'docx'}
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+def ask_groq(question, pdf_text, chat_history=[]):
+    """
+    Send question + PDF context directly to Groq API.
+    No embeddings, no vector search — just context injection.
+    """
+    # Truncate PDF text to fit context window (keep first 6000 chars)
+    context = pdf_text[:6000] if pdf_text else "No document loaded."
+
+    # Build conversation history string (last 6 messages)
+    history_text = ""
+    for msg in chat_history[-6:]:
+        if isinstance(msg, dict):
+            role = "User" if msg.get('type') == 'human' else "Assistant"
+            content = msg.get('content', '')
+        else:
+            role = "User" if msg.role == 'human' else "Assistant"
+            content = msg.content
+        history_text += f"{role}: {content}\n"
+
+    messages = [
+        SystemMessage(content=f"""You are Chat Scholar, an intelligent AI assistant 
+that helps users understand documents. Answer questions based on the document below.
+If the answer is not in the document, say so clearly.
+
+DOCUMENT CONTENT:
+{context}"""),
+        HumanMessage(content=f"""Previous conversation:
+{history_text}
+
+Current question: {question}""")
+    ]
+
+    response = llm.invoke(messages)
+    return response.content
 
 
 def extract_text_from_file(file):
+    """Extract text from PDF, image, txt, or docx files"""
     filename = file.filename.lower()
     ext = filename.rsplit('.', 1)[-1] if '.' in filename else ''
 
-    # ✅ PDF
+    # PDF
     if ext == 'pdf':
         text = ''
         file.seek(0)
@@ -359,19 +397,23 @@ def extract_text_from_file(file):
         doc.close()
         return text.strip()
 
-    # ✅ Images (JPG, JPEG, PNG)
+    # Images
     elif ext in ['jpg', 'jpeg', 'png']:
         file.seek(0)
         image = Image.open(file)
-        text = pytesseract.image_to_string(image)
-        return text.strip()
+        # ✅ Only use pytesseract if available
+        try:
+            text = pytesseract.image_to_string(image)
+            return text.strip()
+        except Exception:
+            return "Image text extraction not available on this server."
 
-    # ✅ Plain text
+    # Plain text
     elif ext == 'txt':
         file.seek(0)
         return file.read().decode('utf-8', errors='ignore')
 
-    # ✅ Word documents
+    # Word documents
     elif ext == 'docx':
         from docx import Document
         file.seek(0)
@@ -380,6 +422,13 @@ def extract_text_from_file(file):
         return text.strip()
 
     return ''
+
+
+ALLOWED_EXTENSIONS = {'pdf', 'jpg', 'jpeg', 'png', 'txt', 'docx'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def chat_render(**kwargs):
     user_pdfs = []
@@ -750,9 +799,9 @@ def process_documents():
                                    error="Please upload at least one PDF.")
 
         # ✅ Check file size - max 10MB
-        pdf_docs[0].seek(0, 2)  # seek to end
+        pdf_docs[0].seek(0, 2)
         file_size = pdf_docs[0].tell()
-        pdf_docs[0].seek(0)  # reset
+        pdf_docs[0].seek(0)
         if file_size > 10 * 1024 * 1024:
             return render_template('new_pdf_chat.html',
                                    error="PDF too large. Please upload a PDF under 10MB.")
@@ -767,15 +816,13 @@ def process_documents():
         # ✅ Limit text size to prevent memory issues
         raw_text = raw_text[:50000]
 
-        text_chunks = get_text_chunks(raw_text)
-        vectorstore = get_vectorstore(text_chunks)
-        conversation_chain = get_conversation_chain(vectorstore)
-
+        # ✅ Store plain text directly — no FAISS, no vectorstore
         pdf_sessions[session_name] = {
-            'vectorstore': vectorstore,
-            'chain': conversation_chain
+            'text': raw_text,
+            'chain': raw_text  # kept for compatibility
         }
         active_session = session_name
+        session['active_session'] = session_name
 
         pdf_record = PDFHistory(
             user_id=current_user.id,
@@ -785,12 +832,11 @@ def process_documents():
         db.session.commit()
         session['current_pdf_id'] = pdf_record.id
 
-        add_notification(current_user.id, "PDF uploaded successfully")
-
         return redirect('/chat')
 
     except Exception as e:
         return render_template('new_pdf_chat.html', error=f"Error: {str(e)}")
+
 
 @app.route('/chat', methods=['GET', 'POST'])
 @login_required
@@ -802,26 +848,40 @@ def chat():
     chat_history = []
 
     current_pdf_id = session.get('current_pdf_id')
+    active = session.get('active_session', active_session)
+
+    # ✅ Get stored plain text instead of vectorstore
+    pdf_text = pdf_sessions.get(active, {}).get('text', '')
+
     if current_pdf_id:
         chat_history = ChatHistory.query.filter_by(
             user_id=current_user.id,
             pdf_id=current_pdf_id
         ).order_by(ChatHistory.timestamp).all()
 
-    conversation_chain = pdf_sessions.get(active_session, {}).get('chain')
-
     if request.method == 'POST':
-        user_question = request.form['user_question']
+        user_question = request.form.get('user_question', '').strip()
 
-        if conversation_chain is None:
+        if not user_question:
+            return chat_render(chat_history=[], summary=None,
+                               resources=None, followups=[])
+
+        if not pdf_text:
             return chat_render(chat_history=[], summary=None,
                                resources=None, followups=[],
                                error="Please upload a PDF first.")
-        try:
-            response = conversation_chain({'question': user_question})
-            raw_history = response['chat_history']
-            ai_answer = raw_history[-1].content if raw_history else ""
 
+        try:
+            # ✅ Build history list for context
+            history_list = [{
+                'type': msg.role,
+                'content': msg.content
+            } for msg in chat_history]
+
+            # ✅ Use ask_groq instead of conversation_chain
+            ai_answer = ask_groq(user_question, pdf_text, history_list)
+
+            # ✅ Save both messages to DB
             if current_pdf_id:
                 db.session.add(ChatHistory(
                     user_id=current_user.id,
@@ -837,30 +897,33 @@ def chat():
                 ))
                 db.session.commit()
 
-            # ✅ Only get followups every 2nd question to save API calls
+            # ✅ Get followups every 2nd question to save API calls
             if len(chat_history) % 4 == 0:
                 followups = get_followup_questions(user_question, ai_answer)
+
+            # ✅ Get resources
+            resources = get_external_resources(user_question)
+
+            # ✅ Reload from DB after saving
+            if current_pdf_id:
+                chat_history = ChatHistory.query.filter_by(
+                    user_id=current_user.id,
+                    pdf_id=current_pdf_id
+                ).order_by(ChatHistory.timestamp).all()
 
         except Exception as e:
             return chat_render(chat_history=chat_history, summary=None,
                                resources=None, followups=[],
                                error=f"Error: {str(e)}")
 
-        # ✅ Get resources after main response
-        resources = get_external_resources(user_question)
-
-        # Reload from DB
-        if current_pdf_id:
-            chat_history = ChatHistory.query.filter_by(
-                user_id=current_user.id,
-                pdf_id=current_pdf_id
-            ).order_by(ChatHistory.timestamp).all()
-
+    # ✅ Format history for template
     formatted_history = []
     for msg in chat_history:
         role = msg.role if hasattr(msg, 'role') else msg.type
         content = msg.content
-        time = msg.timestamp.strftime("%I:%M %p") if hasattr(msg, 'timestamp') else datetime.datetime.now().strftime("%I:%M %p")
+        time = (msg.timestamp.strftime("%I:%M %p")
+                if hasattr(msg, 'timestamp')
+                else datetime.datetime.now().strftime("%I:%M %p"))
         formatted_history.append({
             'type': role,
             'content': markdown.markdown(content) if role == 'ai' else content,
