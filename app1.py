@@ -265,11 +265,19 @@ active_session = None
 rubric_text = ""
 
 # ✅ Groq LLM - no daily limit issues
-llm = ChatGroq(
-    model="llama-3.1-8b-instant",
-    temperature=0.3,
-    api_key="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"  # ✅ put your groq key here
-)
+# ✅ Safe initialization - won't crash if key is missing
+
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY') or os.getenv('GROQ_API_KEY')
+
+if GROQ_API_KEY:
+    llm = ChatGroq(
+        model="llama-3.1-8b-instant",
+        temperature=0.3,
+        api_key=GROQ_API_KEY
+    )
+else:
+    llm = None
+    print("WARNING: GROQ_API_KEY not set")
 
 # =====================
 # HELPER FUNCTIONS
@@ -1143,6 +1151,7 @@ from flask_login import login_required, current_user
 @app.route('/share_chat', methods=['POST'])
 @login_required
 def share_chat():
+    print("SHARE CLICKED")
     current_pdf_id = session.get('current_pdf_id')
     
     # ✅ Check if a PDF is loaded
@@ -1222,14 +1231,14 @@ def view_shared_chat(share_id):
         shared_by=owner.username if owner else "Unknown"
     )
 
-print("SHARE CLICKED")
-
 # =====================
 # CREATE DB AND RUN
 # =====================
 
+# ✅ At bottom of app1.py
 with app.app_context():
     db.create_all()
+    print("Database ready")
 
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True, use_reloader=False)
+    app.run(debug=False, use_reloader=False, threaded=True)
