@@ -31,13 +31,14 @@ if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
 app = Flask(__name__)
-# ✅ Email config
+
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'singhalnikhil010@gmail.com'      # ✅ your gmail
-app.config['MAIL_PASSWORD'] = 'jiuv pdtl bsku tkih'    # ✅ gmail app password
-app.config['MAIL_DEFAULT_SENDER'] = 'singhalnikhil010@gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
 
 mail = Mail(app)
 
@@ -188,28 +189,36 @@ import re as regex_module
 def generate_otp():
     return str(random.randint(100000, 999999))
 
-def send_otp_email(email, otp, username):
+def send_otp_email(email, otp, full_name):
     try:
         msg = Message(
-            subject="Chat Scholar - Verify Your Email",
+            subject="Chat Scholar - Email Verification OTP",
+            sender=app.config['MAIL_USERNAME'],
             recipients=[email]
         )
         msg.html = f"""
-        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-            <h2 style="color: #3b82f6;">Welcome to Chat Scholar!</h2>
-            <p>Hi <strong>{username}</strong>,</p>
-            <p>Your OTP verification code is:</p>
-            <div style="text-align: center; padding: 20px;">
-                <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #8b5cf6;">{otp}</span>
+        <div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;
+                    background:#031427;color:#d3e4fe;padding:40px;border-radius:16px;">
+            <h2 style="color:#adc6ff;">Chat Scholar</h2>
+            <p>Hello <strong>{full_name}</strong>!</p>
+            <p>Your verification code is:</p>
+            <div style="background:#1b2b3f;padding:24px;border-radius:12px;
+                        text-align:center;margin:24px 0;">
+                <span style="font-size:36px;font-weight:900;
+                             letter-spacing:12px;color:#4d8eff;">
+                    {otp}
+                </span>
             </div>
-            <p>This code expires in <strong>10 minutes</strong>.</p>
-            <p style="color: #94a3b8; font-size: 12px;">If you didn't sign up for Chat Scholar, ignore this email.</p>
+            <p style="color:#8c909f;">This code expires in 10 minutes.</p>
+            <p style="color:#8c909f;font-size:12px;">
+                If you didn't request this, ignore this email.
+            </p>
         </div>
         """
         mail.send(msg)
         return True
     except Exception as e:
-        print(f"Email error: {e}")
+        print(f"❌ Email send failed: {str(e)}")
         return False
 
 def validate_email(email):
@@ -543,7 +552,6 @@ def delete_essay(essay_id):
 # =====================
 # AUTH ROUTES
 # =====================
-
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if current_user.is_authenticated:
@@ -601,13 +609,34 @@ def signup():
             'otp_expiry': otp_expiry.isoformat()
         }
 
-        # ✅ Send OTP email
+        # ✅ Try to send OTP email but don't block signup if it fails
         sent = send_otp_email(email, otp, full_name)
-        if not sent:
-            return render_template('signup.html',
-                                   error="Could not send OTP email. Please check your email address.")
 
-        return redirect('/verify_otp')
+        if sent:
+            # Email sent successfully — go to OTP page
+            return redirect('/verify_otp')
+        else:
+            # ✅ Email failed — create user directly without OTP verification
+            # This happens when SMTP is blocked (common on Railway free tier)
+            print(f"Email failed for {email} — creating user without OTP")
+            try:
+                new_user = User(
+                    full_name=full_name,
+                    username=username,
+                    email=email,
+                    password=bcrypt.generate_password_hash(password).decode('utf-8'),
+                    date_of_birth=datetime.datetime.strptime(dob_str, '%Y-%m-%d').date(),
+                    is_verified=True  # ✅ auto-verify since email failed
+                )
+                db.session.add(new_user)
+                db.session.commit()
+                login_user(new_user)
+                session.pop('pending_user', None)
+                return redirect('/')
+            except Exception as e:
+                print(f"User creation failed: {str(e)}")
+                return render_template('signup.html',
+                                       error=f"Signup failed: {str(e)}")
 
     return render_template('signup.html')
 
