@@ -3,18 +3,19 @@ import pytesseract
 import io, os
 import re, fitz
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
 import os, markdown, datetime
-from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import SentenceTransformerEmbeddings
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_bcrypt import Bcrypt
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.schema import SystemMessage, HumanMessage
+
+from langchain_text_splitters import CharacterTextSplitter
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain.schema import SystemMessage, HumanMessage
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_groq import ChatGroq
 
 from flask_mail import Mail, Message
 from flask_dance.contrib.google import make_google_blueprint, google
