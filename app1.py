@@ -2,6 +2,8 @@ from PIL import Image
 import pytesseract
 import io, os
 import re, fitz
+import sendgrid
+from sendgrid.helpers.mail import Mail as SGMail
 from dotenv import load_dotenv
 import os, markdown, datetime
 from flask import Flask, render_template, request, redirect, session, url_for
@@ -190,43 +192,36 @@ def generate_otp():
     return str(random.randint(100000, 999999))
 
 def send_otp_email(email, otp, full_name):
-    # ✅ Check if we're on Railway (no SMTP available)
-    if not os.environ.get('MAIL_USERNAME') or not os.environ.get('MAIL_PASSWORD'):
-        print("Mail not configured — skipping email")
-        return False
-
     try:
-        import socket
-        socket.setdefaulttimeout(5)  # ✅ 5 second timeout max
-
-        msg = Message(
-            subject="Chat Scholar - Email Verification OTP",
-            sender=app.config['MAIL_USERNAME'],
-            recipients=[email]
+        sg = sendgrid.SendGridAPIClient(
+            api_key=os.environ.get('SENDGRID_API_KEY')
         )
-        msg.html = f"""
-        <div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;
-                    background:#031427;color:#d3e4fe;padding:40px;border-radius:16px;">
-            <h2 style="color:#adc6ff;">Chat Scholar</h2>
-            <p>Hello <strong>{full_name}</strong>!</p>
-            <p>Your verification code is:</p>
-            <div style="background:#1b2b3f;padding:24px;border-radius:12px;
-                        text-align:center;margin:24px 0;">
-                <span style="font-size:36px;font-weight:900;
-                             letter-spacing:12px;color:#4d8eff;">
-                    {otp}
-                </span>
+        message = SGMail(
+            from_email=os.environ.get('MAIL_FROM', 'nikhilsinghal2023@gmail.com'),
+            to_emails=email,
+            subject='Chat Scholar - Email Verification',
+            html_content=f"""
+            <div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;
+                        background:#031427;color:#d3e4fe;padding:40px;border-radius:16px;">
+                <h2 style="color:#adc6ff;">Chat Scholar</h2>
+                <p>Hello <strong>{full_name}</strong>!</p>
+                <p>Your verification code is:</p>
+                <div style="background:#1b2b3f;padding:24px;border-radius:12px;
+                            text-align:center;margin:24px 0;">
+                    <span style="font-size:36px;font-weight:900;
+                                 letter-spacing:12px;color:#4d8eff;">
+                        {otp}
+                    </span>
+                </div>
+                <p style="color:#8c909f;">This code expires in 10 minutes.</p>
             </div>
-            <p style="color:#8c909f;">This code expires in 10 minutes.</p>
-        </div>
-        """
-        mail.send(msg)
+            """
+        )
+        sg.send(message)
         return True
     except Exception as e:
-        print(f"Email failed: {str(e)}")
+        print(f"SendGrid error: {str(e)}")
         return False
-    finally:
-        socket.setdefaulttimeout(None)  # ✅ Reset timeout
 
 def validate_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
