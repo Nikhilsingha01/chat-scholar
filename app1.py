@@ -55,14 +55,7 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-
-
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # ✅ allows HTTP for local dev
-
-from flask_session import Session
-
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
 
 google_bp = make_google_blueprint(
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
