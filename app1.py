@@ -1272,5 +1272,56 @@ with app.app_context():
     db.create_all()
     print("Database ready")
 
+@app.route('/admin/users')
+def admin_users():
+    key = request.args.get('key')
+    if key != 'chatscholar_admin_2024':
+        return "Access denied", 403
+    users = User.query.all()
+    html = """<html><head><title>Admin</title>
+    <style>
+        body{font-family:Inter,sans-serif;background:#031427;color:#d3e4fe;padding:32px;}
+        h1{color:#adc6ff;} table{width:100%;border-collapse:collapse;margin-top:24px;}
+        th{background:#1b2b3f;padding:12px;text-align:left;color:#adc6ff;}
+        td{padding:10px 12px;border-bottom:1px solid #26364a;}
+        tr:hover{background:#0b1c30;}
+        .yes{background:#00a572;color:#003824;padding:2px 8px;border-radius:999px;font-size:12px;}
+        .no{background:#93000a;color:#ffdad6;padding:2px 8px;border-radius:999px;font-size:12px;}
+    </style></head><body>
+    <h1>Chat Scholar — Admin Panel</h1>
+    <p>Total users: <strong style="color:#4edea3;">""" + str(len(users)) + """</strong></p>
+    <table><tr>
+        <th>#</th><th>Username</th><th>Full Name</th>
+        <th>Email</th><th>Verified</th><th>Joined</th>
+        <th>PDFs</th><th>Essays</th>
+    </tr>"""
+    for i, user in enumerate(users, 1):
+        verified = '<span class="yes">✓ Yes</span>' if user.is_verified else '<span class="no">✗ No</span>'
+        pdf_count = PDFHistory.query.filter_by(user_id=user.id).count()
+        essay_count = EssayHistory.query.filter_by(user_id=user.id).count()
+        joined = user.created_at.strftime('%b %d, %Y') if user.created_at else 'N/A'
+        html += f"<tr><td>{i}</td><td><strong>{user.username}</strong></td><td>{user.full_name}</td><td>{user.email}</td><td>{verified}</td><td>{joined}</td><td>{pdf_count}</td><td>{essay_count}</td></tr>"
+    html += "</table></body></html>"
+    return html
+
+
+@app.route('/admin/stats')
+def admin_stats():
+    key = request.args.get('key')
+    if key != 'chatscholar_admin_2024':
+        return "Access denied", 403
+    import json
+    data = {
+        'total_users': User.query.count(),
+        'verified_users': User.query.filter_by(is_verified=True).count(),
+        'total_pdfs': PDFHistory.query.count(),
+        'total_essays': EssayHistory.query.count(),
+        'total_chats': ChatHistory.query.count(),
+        'users': [{'id': u.id, 'username': u.username, 'email': u.email,
+                   'verified': u.is_verified, 'joined': str(u.created_at)}
+                  for u in User.query.all()]
+    }
+    return json.dumps(data, indent=2), 200, {'Content-Type': 'application/json'}
+
 if __name__ == '__main__':
     app.run(debug=False, use_reloader=False, threaded=True)
