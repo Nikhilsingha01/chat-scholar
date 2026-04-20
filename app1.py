@@ -12,8 +12,6 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from flask_bcrypt import Bcrypt
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_groq import ChatGroq
-
-from flask_mail import Mail, Message
 from flask_dance.contrib.google import make_google_blueprint, google
 
 if os.name == "nt":
@@ -33,16 +31,6 @@ if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
 app = Flask(__name__)
-
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
-
-mail = Mail(app)
 
 app.config['SECRET_KEY'] = 'chatscholar_secret_key_2024'
 import os
