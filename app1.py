@@ -582,42 +582,49 @@ def signup():
         otp = generate_otp()
         otp_expiry = datetime.datetime.now() + datetime.timedelta(minutes=10)
 
-        # ✅ Try sending email with short timeout
+        # ✅ Always store pending user in session first
+        session['pending_user'] = {
+            'full_name': full_name,
+            'username': username,
+            'email': email,
+            'password': bcrypt.generate_password_hash(password).decode('utf-8'),
+            'date_of_birth': dob_str,
+            'otp': otp,
+            'otp_expiry': otp_expiry.isoformat()
+        }
+
+        # ✅ Try sending OTP email
         sent = send_otp_email(email, otp, full_name)
 
         if sent:
-            # ✅ Email worked — store in session and go to OTP page
-            session['pending_user'] = {
-                'full_name': full_name,
-                'username': username,
-                'email': email,
-                'password': bcrypt.generate_password_hash(password).decode('utf-8'),
-                'date_of_birth': dob_str,
-                'otp': otp,
-                'otp_expiry': otp_expiry.isoformat()
-            }
+            # ✅ Email sent — go to OTP verification page
+            print(f"OTP sent to {email}")
             return redirect('/verify_otp')
         else:
-            # ✅ Email failed (Railway blocks SMTP)
-            # Create user directly and auto-verify
+            # ✅ Email failed — create user directly and auto login
+            print(f"Email failed for {email} — auto creating user")
             try:
-                dob = datetime.datetime.strptime(dob_str, '%Y-%m-%d').date()
-            except ValueError:
-                dob = None
+                try:
+                    dob = datetime.datetime.strptime(dob_str, '%Y-%m-%d').date()
+                except ValueError:
+                    dob = None
 
-            try:
                 new_user = User(
                     full_name=full_name,
                     username=username,
                     email=email,
-                    password=bcrypt.generate_password_hash(password).decode('utf-8'),
+                    password=bcrypt.generate_password_hash(
+                        password).decode('utf-8'),
                     date_of_birth=dob,
-                    is_verified=True  # ✅ auto verify
+                    is_verified=True
                 )
                 db.session.add(new_user)
                 db.session.commit()
                 login_user(new_user)
+                session.pop('pending_user', None)
+                print(f"User {username} created and logged in")
                 return redirect('/')
+
             except Exception as e:
                 db.session.rollback()
                 print(f"User creation error: {str(e)}")
@@ -633,55 +640,75 @@ def terms():
 @app.route('/verify_otp', methods=['GET', 'POST'])
 def verify_otp():
     pending = session.get('pending_user')
+
+    # ✅ If no pending user — redirect to signup not login
     if not pending:
         return redirect('/signup')
 
-    if request.method == 'POST':
-        entered_otp = request.form.get('otp', '').strip()
-        action = request.form.get('action', '')
+    email = pending.get('email', '')
 
-        # ✅ Resend OTP
+    if request.method == 'POST':
+        action = request.form.get('action', 'verify')
+
         if action == 'resend':
             otp = generate_otp()
-            otp_expiry = datetime.datetime.now() + datetime.timedelta(minutes=10)
-            pending['otp'] = otp
-            pending['otp_expiry'] = otp_expiry.isoformat()
-            session['pending_user'] = pending
-            send_otp_email(pending['email'], otp, pending['full_name'])
+            otp_expiry = datetime.datetime.now() + \
+                datetime.timedelta(minutes=10)
+            session['pending_user']['otp'] = otp
+            session['pending_user']['otp_expiry'] = otp_expiry.isoformat()
+            session.modified = True
+            send_otp_email(email, otp, pending.get('full_name', ''))
             return render_template('verify_otp.html',
-                                   email=pending['email'],
-                                   success="New OTP sent to your email.")
+                                   email=email,
+                                   success="New OTP sent!")
 
         # ✅ Verify OTP
-        expiry = datetime.datetime.fromisoformat(pending['otp_expiry'])
-        if datetime.datetime.now() > expiry:
-            return render_template('verify_otp.html',
-                                   email=pending['email'],
-                                   error="OTP has expired. Please request a new one.")
+        entered_otp = request.form.get('otp', '').strip()
+        stored_otp = pending.get('otp', '')
+        otp_expiry = datetime.datetime.fromisoformat(
+            pending.get('otp_expiry', datetime.datetime.now().isoformat())
+        )
 
-        if entered_otp != pending['otp']:
+        if datetime.datetime.now() > otp_expiry:
             return render_template('verify_otp.html',
-                                   email=pending['email'],
+                                   email=email,
+                                   error="OTP expired. Please request a new one.")
+
+        if entered_otp != stored_otp:
+            return render_template('verify_otp.html',
+                                   email=email,
                                    error="Invalid OTP. Please try again.")
 
-        # ✅ Create user
-        dob = datetime.datetime.strptime(pending['date_of_birth'], '%Y-%m-%d').date()
-        user = User(
-            full_name=pending['full_name'],
-            username=pending['username'],
-            email=pending['email'],
-            password=pending['password'],
-            date_of_birth=dob,
-            is_verified=True
-        )
-        db.session.add(user)
-        db.session.commit()
-        session.pop('pending_user', None)
-        login_user(user)
-        return redirect('/')
+        # ✅ OTP correct — create user
+        try:
+            try:
+                dob = datetime.datetime.strptime(
+                    pending['date_of_birth'], '%Y-%m-%d').date()
+            except ValueError:
+                dob = None
 
-    return render_template('verify_otp.html', email=pending.get('email', ''))
+            new_user = User(
+                full_name=pending['full_name'],
+                username=pending['username'],
+                email=pending['email'],
+                password=pending['password'],
+                date_of_birth=dob,
+                is_verified=True
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            login_user(new_user)
+            session.pop('pending_user', None)
+            return redirect('/')
 
+        except Exception as e:
+            db.session.rollback()
+            print(f"User creation error: {str(e)}")
+            return render_template('verify_otp.html',
+                                   email=email,
+                                   error=f"Account creation failed: {str(e)}")
+
+    return render_template('verify_otp.html', email=email)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
