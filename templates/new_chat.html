@@ -190,27 +190,27 @@ function toggleNotif(){
         </div>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2 md:gap-3">
         <!-- Share -->
         <form action="/share_chat" method="post" class="inline">
             <button type="submit"
-                class="flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant/20 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all text-sm font-medium">
+                class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full border border-outline-variant/20 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all text-sm font-medium">
                 <span class="material-symbols-outlined text-sm">share</span>
-                Share
+                <span class="hidden sm:inline">Share</span>
             </button>
         </form>
         <!-- Export -->
         <button onclick="exportChat()"
-            class="flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant/20 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all text-sm font-medium">
+            class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full border border-outline-variant/20 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all text-sm font-medium">
             <span class="material-symbols-outlined text-sm">download</span>
-            Export
+            <span class="hidden sm:inline">Export</span>
         </button>
         <!-- Summarize -->
         <form action="/summarize_chat" method="post" class="inline">
             <button type="submit"
-                class="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-gradient text-on-primary-container font-bold text-sm hover:opacity-90 transition-all">
+                class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-primary-gradient text-on-primary-container font-bold text-sm hover:opacity-90 transition-all">
                 <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">summarize</span>
-                Summarize
+                <span class="hidden sm:inline">Summarize</span>
             </button>
         </form>
         <!-- Dark mode -->
@@ -241,7 +241,7 @@ function toggleNotif(){
 <main class="ml-0 md:ml-[280px] pt-16 pb-36 min-h-screen bg-surface flex flex-col">
 
     <!-- Search Bar -->
-    <div class="sticky top-16 z-30 bg-surface/80 backdrop-blur px-8 py-4 border-b border-slate-800/10">
+    <div class="sticky top-16 z-30 bg-surface/80 backdrop-blur px-4 md:px-8 py-4 border-b border-slate-800/10">
         <div class="max-w-4xl mx-auto relative">
             <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
             <input id="search-input" type="text"
@@ -256,7 +256,7 @@ function toggleNotif(){
 
     <!-- ✅ Error message -->
     {% if error %}
-    <div class="max-w-4xl mx-auto w-full px-8 mt-4">
+    <div class="max-w-4xl mx-auto w-full px-4 md:px-8 mt-4">
         <div class="flex items-center gap-3 bg-error/10 border border-error/20 rounded-xl px-5 py-3">
             <span class="material-symbols-outlined text-error text-sm">error</span>
             <p class="text-error text-sm font-medium">{{ error }}</p>
@@ -266,7 +266,7 @@ function toggleNotif(){
 
     <!-- ✅ Share URL display -->
     {% if share_url %}
-    <div class="max-w-4xl mx-auto w-full px-8 mt-4">
+    <div class="max-w-4xl mx-auto w-full px-4 md:px-8 mt-4">
         <div class="flex items-center gap-3 bg-tertiary/10 border border-tertiary/20 rounded-xl px-5 py-3">
             <span class="material-symbols-outlined text-tertiary text-sm">link</span>
             <input type="text" value="{{ share_url }}" readonly
@@ -278,7 +278,7 @@ function toggleNotif(){
     {% endif %}
 
     <!-- ✅ Chat Messages -->
-    <div id="chat-messages" class="flex-1 overflow-y-auto px-8 py-6 space-y-8 max-w-4xl mx-auto w-full">
+    <div id="chat-messages" class="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-8 max-w-4xl mx-auto w-full">
 
         {% if chat_history %}
             {% for message in chat_history %}
@@ -365,7 +365,7 @@ function toggleNotif(){
 
     <!-- ✅ Bottom cards: Resources, Followups, Summary -->
     {% if resources or followups or summary %}
-    <div class="max-w-4xl mx-auto w-full px-8 pb-4">
+    <div class="max-w-4xl mx-auto w-full px-4 md:px-8 pb-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
             {% if resources %}
@@ -414,7 +414,7 @@ function toggleNotif(){
 
     <!-- Clear chat -->
     {% if chat_history %}
-    <div class="max-w-4xl mx-auto w-full px-8 pb-2 flex justify-end">
+    <div class="max-w-4xl mx-auto w-full px-4 md:px-8 pb-2 flex justify-end">
         <form action="/clear_chat" method="post">
             <button type="submit"
                 onclick="return confirm('Clear all chat history?')"

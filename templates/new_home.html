@@ -113,56 +113,6 @@ function toggleNotif(){
             filter: blur(60px);
             z-index: -1;
         }
-
-        /* Light mode overrides */
-        html:not(.dark) body {
-            background-color: #f0f4ff;
-            color: #1e293b;
-        }
-        html:not(.dark) nav {
-            background: rgba(240, 244, 255, 0.85) !important;
-        }
-        html:not(.dark) .glass-panel {
-            background: rgba(255,255,255,0.6);
-            border: 1px solid rgba(100,120,200,0.15);
-        }
-        html:not(.dark) .bg-surface-container-low { background-color: #e8eeff; }
-        html:not(.dark) .bg-surface-container-high { background-color: #dce6ff; }
-        html:not(.dark) .bg-surface-container-highest { background-color: #d4e0ff; }
-        html:not(.dark) .bg-surface-bright { background-color: #c8d8ff; }
-        html:not(.dark) .text-on-surface-variant { color: #4a5568; }
-        html:not(.dark) .text-white { color: #1e293b !important; }
-        html:not(.dark) .border-outline-variant\/10 { border-color: rgba(100,120,200,0.15); }
-
-        /* ✅ Mobile responsive fixes */
-    @media (max-width: 768px) {
-
-    /* Sidebar — hide on mobile */
-    aside {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-        z-index: 100;
-    }
-    aside.open {
-        transform: translateX(0);
-    }
-
-    /* Main content — full width on mobile */
-    main, header {
-        margin-left: 0 !important;
-        left: 0 !important;
-    }
-
-    /* Hamburger button */
-    #hamburger {
-        display: flex !important;
-    }
-
-    /* Chat input area */
-    .fixed.bottom-0 {
-        left: 0 !important;
-    }
-    }
     </style>
 </head>
 

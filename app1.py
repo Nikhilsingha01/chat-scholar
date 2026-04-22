@@ -6,6 +6,7 @@ import sendgrid
 from sendgrid.helpers.mail import Mail as SGMail
 from dotenv import load_dotenv
 import os, markdown, datetime
+import traceback
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -181,10 +182,18 @@ def generate_otp():
 
 def send_otp_email(email, otp, full_name):
     api_key = os.environ.get('SENDGRID_API_KEY', '')
+    from_email = (
+        os.environ.get('SENDGRID_FROM_EMAIL', '').strip()
+        or os.environ.get('MAIL_FROM', '').strip()
+        or os.environ.get('FROM_EMAIL', '').strip()
+        or os.environ.get('MAIL_USERNAME', '').strip()
+        or 'no-reply@chatscholar.ai'
+    )
     
     print(f"Attempting to send OTP to: {email}")
     print(f"SendGrid API key exists: {bool(api_key)}")
     print(f"API key starts with SG.: {api_key.startswith('SG.')}")
+    print(f"SendGrid FROM email: {from_email}")
     
     if not api_key:
         print("ERROR: No SendGrid API key found")
@@ -193,7 +202,7 @@ def send_otp_email(email, otp, full_name):
     try:
         sg = sendgrid.SendGridAPIClient(api_key=api_key)
         message = SGMail(
-            from_email='nikhilsinghal2023@gmail.com',
+            from_email=from_email,
             to_emails=email,
             subject='Chat Scholar - Email Verification',
             html_content=f"""
@@ -215,6 +224,12 @@ def send_otp_email(email, otp, full_name):
         )
         response = sg.send(message)
         print(f"SendGrid response status: {response.status_code}")
+        try:
+            body = response.body.decode("utf-8") if hasattr(response.body, "decode") else str(response.body)
+            if body and body.strip():
+                print(f"SendGrid response body: {body[:2000]}")
+        except Exception:
+            pass
         
         if response.status_code in [200, 201, 202]:
             print("Email sent successfully!")
@@ -274,6 +289,8 @@ def add_notification(user_id, msg):
 # ✅ Add this route to see the exact error
 @app.errorhandler(500)
 def internal_error(error):
+    print("500 ERROR:", repr(error))
+    print(traceback.format_exc())
     return f"""
     <html>
     <body style="background:#031427;color:#d3e4fe;font-family:monospace;padding:32px;">
@@ -632,35 +649,13 @@ def signup():
             print(f"OTP sent to {email}")
             return redirect('/verify_otp')
         else:
-            # ✅ Email failed — create user directly and auto login
-            print(f"Email failed for {email} — auto creating user")
-            try:
-                try:
-                    dob = datetime.datetime.strptime(dob_str, '%Y-%m-%d').date()
-                except ValueError:
-                    dob = None
-
-                new_user = User(
-                    full_name=full_name,
-                    username=username,
-                    email=email,
-                    password=bcrypt.generate_password_hash(
-                        password).decode('utf-8'),
-                    date_of_birth=dob,
-                    is_verified=True
-                )
-                db.session.add(new_user)
-                db.session.commit()
-                login_user(new_user)
-                session.pop('pending_user', None)
-                print(f"User {username} created and logged in")
-                return redirect('/')
-
-            except Exception as e:
-                db.session.rollback()
-                print(f"User creation error: {str(e)}")
-                return render_template('signup.html',
-                                       error=f"Signup failed: {str(e)}")
+            # ✅ Email failed — do NOT auto-verify; show clear error
+            print(f"Email failed for {email} — OTP not delivered")
+            session.pop('pending_user', None)
+            return render_template(
+                'signup.html',
+                error="OTP email could not be sent right now. Please try again later, or contact support."
+            )
 
     return render_template('signup.html')
 
