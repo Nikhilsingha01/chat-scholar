@@ -63,6 +63,36 @@ function toggleNotif(){
     background:rgba(255,255,255,0.05);
     color:white;
     }
+
+    /* ✅ Mobile responsive fixes */
+    @media (max-width: 768px) {
+
+    /* Sidebar — hide on mobile */
+    aside {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 100;
+    }
+    aside.open {
+        transform: translateX(0);
+    }
+
+    /* Main content — full width on mobile */
+    main, header {
+        margin-left: 0 !important;
+        left: 0 !important;
+    }
+
+    /* Hamburger button */
+    #hamburger {
+        display: flex !important;
+    }
+
+    /* Chat input area */
+    .fixed.bottom-0 {
+        left: 0 !important;
+    }
+    }
 </style>
 </head>
 
@@ -70,6 +100,23 @@ function toggleNotif(){
 
 <!-- ✅ Sidebar -->
 <aside class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/90 backdrop-blur-xl flex flex-col p-6 border-r border-slate-800/15 z-50">
+
+    // ✅ Mobile sidebar toggle
+    function toggleSidebar() {
+        const sidebar = document.querySelector('aside');
+        sidebar.classList.toggle('open');
+    }
+
+    // ✅ Close sidebar when clicking outside
+    document.addEventListener('click', function(e) {
+        const sidebar = document.querySelector('aside');
+        const hamburger = document.getElementById('hamburger');
+        if (sidebar && hamburger &&
+            !sidebar.contains(e.target) &&
+            !hamburger.contains(e.target)) {
+            sidebar.classList.remove('open');
+        }
+    });
    
     <!-- Logo -->
     <div class="mb-10">
@@ -164,6 +211,15 @@ function toggleNotif(){
     <div class="flex items-center gap-5">
         <button onclick="toggleDark()" id="dark-toggle" class="text-slate-400 hover:text-blue-300 transition-opacity">
             <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+        </button>
+
+        <!-- ✅ Hamburger button — shows only on mobile -->
+        <button id="hamburger"
+            onclick="toggleSidebar()"
+            class="hidden items-center justify-center w-10 h-10 rounded-xl
+                bg-surface-container-highest text-on-surface-variant
+                hover:text-primary transition-colors mr-3">
+            <span class="material-symbols-outlined">menu</span>
         </button>
         
         <div class="relative">
