@@ -180,12 +180,20 @@ def generate_otp():
     return str(random.randint(100000, 999999))
 
 def send_otp_email(email, otp, full_name):
+    api_key = os.environ.get('SENDGRID_API_KEY', '')
+    
+    print(f"Attempting to send OTP to: {email}")
+    print(f"SendGrid API key exists: {bool(api_key)}")
+    print(f"API key starts with SG.: {api_key.startswith('SG.')}")
+    
+    if not api_key:
+        print("ERROR: No SendGrid API key found")
+        return False
+
     try:
-        sg = sendgrid.SendGridAPIClient(
-            api_key=os.environ.get('SENDGRID_API_KEY')
-        )
+        sg = sendgrid.SendGridAPIClient(api_key=api_key)
         message = SGMail(
-            from_email=os.environ.get('MAIL_FROM', 'nikhilsinghal2023@gmail.com'),
+            from_email='nikhilsinghal2023@gmail.com',
             to_emails=email,
             subject='Chat Scholar - Email Verification',
             html_content=f"""
@@ -205,10 +213,18 @@ def send_otp_email(email, otp, full_name):
             </div>
             """
         )
-        sg.send(message)
-        return True
+        response = sg.send(message)
+        print(f"SendGrid response status: {response.status_code}")
+        
+        if response.status_code in [200, 201, 202]:
+            print("Email sent successfully!")
+            return True
+        else:
+            print(f"SendGrid failed with status: {response.status_code}")
+            return False
+            
     except Exception as e:
-        print(f"SendGrid error: {str(e)}")
+        print(f"SendGrid exception: {type(e).__name__}: {str(e)}")
         return False
 
 def validate_email(email):
@@ -254,6 +270,21 @@ def add_notification(user_id, msg):
     new = Notification(user_id=user_id, message=msg)
     db.session.add(new)
     db.session.commit()
+
+# ✅ Add this route to see the exact error
+@app.errorhandler(500)
+def internal_error(error):
+    return f"""
+    <html>
+    <body style="background:#031427;color:#d3e4fe;font-family:monospace;padding:32px;">
+        <h2 style="color:#ffb4ab;">Internal Server Error</h2>
+        <pre style="background:#1b2b3f;padding:16px;border-radius:8px;overflow:auto;">
+{str(error)}
+        </pre>
+        <a href="/" style="color:#adc6ff;">← Go Home</a>
+    </body>
+    </html>
+    """, 500
 
 # =====================
 # IN-MEMORY SESSION STORE
