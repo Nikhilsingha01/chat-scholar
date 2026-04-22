@@ -49,60 +49,16 @@ function toggleNotif(){
     /* Word count update animation */
     @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
     .pop { animation: pop 0.2s ease; }
-
-    /* ✅ Mobile responsive fixes */
-    @media (max-width: 768px) {
-
-    /* Sidebar — hide on mobile */
-    aside {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-        z-index: 100;
-    }
-    aside.open {
-        transform: translateX(0);
-    }
-
-    /* Main content — full width on mobile */
-    main, header {
-        margin-left: 0 !important;
-        left: 0 !important;
-    }
-
-    /* Hamburger button */
-    #hamburger {
-        display: flex !important;
-    }
-
-    /* Chat input area */
-    .fixed.bottom-0 {
-        left: 0 !important;
-    }
-    }
 </style>
 </head>
 
 <body class="bg-background text-on-background font-body selection:bg-primary/30 min-h-screen">
 
+<!-- Mobile sidebar backdrop -->
+<div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden"></div>
+
 <!-- ✅ Sidebar -->
-<aside class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/90 backdrop-blur-xl flex flex-col p-6 border-r border-slate-800/15 z-50">
-
-    // ✅ Mobile sidebar toggle
-    function toggleSidebar() {
-        const sidebar = document.querySelector('aside');
-        sidebar.classList.toggle('open');
-    }
-
-    // ✅ Close sidebar when clicking outside
-    document.addEventListener('click', function(e) {
-        const sidebar = document.querySelector('aside');
-        const hamburger = document.getElementById('hamburger');
-        if (sidebar && hamburger &&
-            !sidebar.contains(e.target) &&
-            !hamburger.contains(e.target)) {
-            sidebar.classList.remove('open');
-        }
-    });
+<aside id="app-sidebar" class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/90 backdrop-blur-xl flex flex-col p-6 border-r border-slate-800/15 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out">
     
     <div class="mb-10">
         <h1 class="text-xl font-bold bg-gradient-to-r from-[#adc6ff] to-[#4d8eff] bg-clip-text text-transparent font-plus-jakarta">
@@ -176,7 +132,7 @@ function toggleNotif(){
 </aside>
 
 <!-- ✅ Top Navbar -->
-<header class="fixed top-0 right-0 h-16 left-[280px] bg-slate-950/80 backdrop-blur-[20px] flex justify-between items-center px-8 z-40 border-b border-slate-800/15">
+<header class="fixed top-0 right-0 h-16 left-0 md:left-[280px] bg-slate-950/80 backdrop-blur-[20px] flex justify-between items-center px-4 md:px-8 z-40 border-b border-slate-800/15">
     <div class="flex items-center gap-3">
         
         <span class="text-blue-400 font-bold font-plus-jakarta text-lg">Essay Rubric Setup</span>
@@ -205,7 +161,7 @@ function toggleNotif(){
         <!-- ✅ Hamburger button — shows only on mobile -->
         <button id="hamburger"
             onclick="toggleSidebar()"
-            class="hidden items-center justify-center w-10 h-10 rounded-xl
+            class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl
                 bg-surface-container-highest text-on-surface-variant
                 hover:text-primary transition-colors mr-3">
             <span class="material-symbols-outlined">menu</span>
@@ -255,7 +211,7 @@ function toggleNotif(){
 </header>
 
 <!-- ✅ Main Content -->
-<main class="ml-[280px] pt-20 px-12 pb-16 min-h-screen">
+<main class="ml-0 md:ml-[280px] pt-20 px-6 md:px-12 pb-16 min-h-screen">
     <div class="max-w-4xl mx-auto">
 
         <!-- Page Header -->
@@ -444,6 +400,40 @@ function toggleDark() {
     localStorage.setItem('darkMode', isDark);
     if (themeIcon) themeIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
 }
+
+// ✅ Mobile sidebar toggle (shared)
+const bodyEl = document.body;
+const sidebar = document.getElementById('app-sidebar');
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+function setSidebarOpen(open) {
+    if (!sidebar || !sidebarBackdrop) return;
+    if (open) {
+        sidebar.classList.remove('-translate-x-full');
+        sidebarBackdrop.classList.remove('hidden');
+        bodyEl.classList.add('overflow-hidden');
+    } else {
+        sidebar.classList.add('-translate-x-full');
+        sidebarBackdrop.classList.add('hidden');
+        bodyEl.classList.remove('overflow-hidden');
+    }
+}
+
+function toggleSidebar() {
+    if (!sidebar) return;
+    const isOpen = !sidebar.classList.contains('-translate-x-full');
+    setSidebarOpen(!isOpen);
+}
+
+if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', () => setSidebarOpen(false));
+}
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setSidebarOpen(false);
+});
+window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) setSidebarOpen(false);
+});
 
 // ✅ Character counter
 function updateRubricCount(textarea) {

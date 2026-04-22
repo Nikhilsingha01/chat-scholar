@@ -68,7 +68,9 @@ font-weight:700;
 <div class="flex min-h-screen">
 
     <!-- Sidebar -->
-    <aside class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/95 backdrop-blur-xl border-r border-slate-800 z-50 flex flex-col p-6">
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden"></div>
+
+    <aside id="app-sidebar" class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/95 backdrop-blur-xl border-r border-slate-800 z-50 flex flex-col p-6 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out">
 
         <!-- Logo -->
         <div class="mb-10">
@@ -161,15 +163,24 @@ font-weight:700;
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 ml-[280px]">
+    <div class="flex-1 ml-0 md:ml-[280px]">
 
         <!-- Topbar -->
-        <header class="h-20 border-b border-white/10 flex items-center justify-between px-8">
+        <header class="h-20 border-b border-white/10 flex items-center justify-between px-4 md:px-8">
 
             <!-- Left -->
-            <div>
+            <div class="flex items-center gap-3 min-w-0">
+                <button
+                  type="button"
+                  class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl hover:bg-white/5 transition text-slate-200"
+                  aria-controls="app-sidebar"
+                  aria-expanded="false"
+                  onclick="toggleSidebar()"
+                >
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
                 {% block page_heading %}
-                <h2 class="text-xl font-bold">Dashboard</h2>
+                <h2 class="text-lg md:text-xl font-bold truncate">Dashboard</h2>
                 {% endblock %}
             </div>
 
@@ -210,8 +221,11 @@ font-weight:700;
 </div>
 
 <script>
+const bodyEl = document.body;
 const html = document.getElementById("html-root");
 const icon = document.getElementById("theme-icon");
+const sidebar = document.getElementById("app-sidebar");
+const sidebarBackdrop = document.getElementById("sidebar-backdrop");
 
 if(localStorage.getItem("theme")==="light"){
     html.classList.remove("dark");
@@ -232,6 +246,41 @@ function toggleDark(){
         if(icon) icon.textContent="dark_mode";
     }
 }
+
+function setSidebarOpen(open){
+    if(!sidebar || !sidebarBackdrop) return;
+
+    if(open){
+        sidebar.classList.remove("-translate-x-full");
+        sidebarBackdrop.classList.remove("hidden");
+        bodyEl.classList.add("overflow-hidden");
+    }else{
+        sidebar.classList.add("-translate-x-full");
+        sidebarBackdrop.classList.add("hidden");
+        bodyEl.classList.remove("overflow-hidden");
+    }
+
+    const btn = document.querySelector('button[aria-controls="app-sidebar"]');
+    if(btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+}
+
+function toggleSidebar(){
+    if(!sidebar) return;
+    const isOpen = !sidebar.classList.contains("-translate-x-full");
+    setSidebarOpen(!isOpen);
+}
+
+if(sidebarBackdrop){
+    sidebarBackdrop.addEventListener("click", () => setSidebarOpen(false));
+}
+
+document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape") setSidebarOpen(false);
+});
+
+window.addEventListener("resize", () => {
+    if(window.innerWidth >= 768) setSidebarOpen(false);
+});
 </script>
 
 {% block extra_script %}{% endblock %}

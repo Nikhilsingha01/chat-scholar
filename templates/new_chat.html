@@ -64,61 +64,17 @@ function toggleNotif(){
     #chat-messages::-webkit-scrollbar { width: 4px; }
     #chat-messages::-webkit-scrollbar-track { background: transparent; }
     #chat-messages::-webkit-scrollbar-thumb { background: #424754; border-radius: 4px; }
-
-    /* ✅ Mobile responsive fixes */
-    @media (max-width: 768px) {
-
-    /* Sidebar — hide on mobile */
-    aside {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-        z-index: 100;
-    }
-    aside.open {
-        transform: translateX(0);
-    }
-
-    /* Main content — full width on mobile */
-    main, header {
-        margin-left: 0 !important;
-        left: 0 !important;
-    }
-
-    /* Hamburger button */
-    #hamburger {
-        display: flex !important;
-    }
-
-    /* Chat input area */
-    .fixed.bottom-0 {
-        left: 0 !important;
-    }
-    }
 </style>
 </head>
 
 <body class="bg-background text-on-background font-body selection:bg-primary/30 min-h-screen">
 
+<!-- Mobile sidebar backdrop -->
+<div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden"></div>
+
 <!-- ✅ Sidebar -->
-<aside class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/90 backdrop-blur-xl flex flex-col p-6 border-r border-slate-800/15 z-50">
+<aside id="app-sidebar" class="fixed left-0 top-0 h-full w-[280px] bg-slate-950/90 backdrop-blur-xl flex flex-col p-6 border-r border-slate-800/15 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out">
 
-    // ✅ Mobile sidebar toggle
-    function toggleSidebar() {
-        const sidebar = document.querySelector('aside');
-        sidebar.classList.toggle('open');
-    }
-
-    // ✅ Close sidebar when clicking outside
-    document.addEventListener('click', function(e) {
-        const sidebar = document.querySelector('aside');
-        const hamburger = document.getElementById('hamburger');
-        if (sidebar && hamburger &&
-            !sidebar.contains(e.target) &&
-            !hamburger.contains(e.target)) {
-            sidebar.classList.remove('open');
-        }
-    });
-    
      <div class="mb-10 flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-primary-gradient flex items-center justify-center">
             <span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">school</span>
@@ -219,7 +175,7 @@ function toggleNotif(){
 </aside>
 
 <!-- ✅ Top Header with doc name -->
-<header class="fixed top-0 right-0 left-[280px] h-16 bg-slate-950/80 backdrop-blur-[20px] flex items-center justify-between px-8 z-40 border-b border-slate-800/15">
+<header class="fixed top-0 right-0 left-0 md:left-[280px] h-16 bg-slate-950/80 backdrop-blur-[20px] flex items-center justify-between px-4 md:px-8 z-40 border-b border-slate-800/15">
     <div class="flex items-center gap-4">
         <div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/20">
             <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">picture_as_pdf</span>
@@ -265,7 +221,7 @@ function toggleNotif(){
         <!-- ✅ Hamburger button — shows only on mobile -->
         <button id="hamburger"
             onclick="toggleSidebar()"
-            class="hidden items-center justify-center w-10 h-10 rounded-xl
+            class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl
                 bg-surface-container-highest text-on-surface-variant
                 hover:text-primary transition-colors mr-3">
             <span class="material-symbols-outlined">menu</span>
@@ -282,7 +238,7 @@ function toggleNotif(){
 </header>
 
 <!-- ✅ Main Chat Area -->
-<main class="ml-[280px] pt-16 pb-36 min-h-screen bg-surface flex flex-col">
+<main class="ml-0 md:ml-[280px] pt-16 pb-36 min-h-screen bg-surface flex flex-col">
 
     <!-- Search Bar -->
     <div class="sticky top-16 z-30 bg-surface/80 backdrop-blur px-8 py-4 border-b border-slate-800/10">
@@ -472,7 +428,7 @@ function toggleNotif(){
 </main>
 
 <!-- ✅ Fixed Bottom Input -->
-<div class="fixed bottom-0 left-[280px] right-0 p-6 bg-gradient-to-t from-surface via-surface/95 to-transparent pointer-events-none z-30">
+<div class="fixed bottom-0 left-0 md:left-[280px] right-0 p-4 md:p-6 bg-gradient-to-t from-surface via-surface/95 to-transparent pointer-events-none z-30">
     <form action="/chat" method="post" id="chat-form"
         class="max-w-4xl mx-auto pointer-events-auto">
         <div class="bg-surface-container-highest/80 backdrop-blur-xl border border-outline-variant/20 rounded-full p-2 flex items-center gap-2 shadow-2xl shadow-black/20">
@@ -523,6 +479,40 @@ function toggleDark() {
     localStorage.setItem('darkMode', isDark);
     if (themeIcon) themeIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
 }
+
+// ✅ Mobile sidebar toggle (shared)
+const bodyEl = document.body;
+const sidebar = document.getElementById('app-sidebar');
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+function setSidebarOpen(open) {
+    if (!sidebar || !sidebarBackdrop) return;
+    if (open) {
+        sidebar.classList.remove('-translate-x-full');
+        sidebarBackdrop.classList.remove('hidden');
+        bodyEl.classList.add('overflow-hidden');
+    } else {
+        sidebar.classList.add('-translate-x-full');
+        sidebarBackdrop.classList.add('hidden');
+        bodyEl.classList.remove('overflow-hidden');
+    }
+}
+
+function toggleSidebar() {
+    if (!sidebar) return;
+    const isOpen = !sidebar.classList.contains('-translate-x-full');
+    setSidebarOpen(!isOpen);
+}
+
+if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', () => setSidebarOpen(false));
+}
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setSidebarOpen(false);
+});
+window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) setSidebarOpen(false);
+});
 
 // ✅ Auto scroll to bottom
 function scrollToBottom() {
