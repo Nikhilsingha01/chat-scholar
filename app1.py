@@ -7,6 +7,8 @@ from sendgrid.helpers.mail import Mail as SGMail
 from dotenv import load_dotenv
 import os, markdown, datetime
 import traceback
+import smtplib
+from email.message import EmailMessage
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -180,6 +182,51 @@ import re as regex_module
 def generate_otp():
     return str(random.randint(100000, 999999))
 
+def _send_otp_email_smtp(email, otp, full_name):
+    smtp_user = _clean_env_value(os.environ.get("MAIL_USERNAME", ""))
+    smtp_pass = _clean_env_value(os.environ.get("MAIL_PASSWORD", ""))
+    from_email = _clean_env_value(os.environ.get("MAIL_FROM", "")) or smtp_user
+
+    if not smtp_user or not smtp_pass or not from_email:
+        print("SMTP missing config: MAIL_USERNAME/MAIL_PASSWORD/MAIL_FROM")
+        return False
+
+    msg = EmailMessage()
+    msg["Subject"] = "Chat Scholar - Email Verification"
+    msg["From"] = from_email
+    msg["To"] = email
+    msg.set_content(
+        f"Hello {full_name},\n\nYour verification code is: {otp}\n\nThis code expires in 10 minutes.\n"
+    )
+    msg.add_alternative(f"""
+    <div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;
+                background:#031427;color:#d3e4fe;padding:40px;border-radius:16px;">
+        <h2 style="color:#adc6ff;">Chat Scholar</h2>
+        <p>Hello <strong>{full_name}</strong>!</p>
+        <p>Your verification code is:</p>
+        <div style="background:#1b2b3f;padding:24px;border-radius:12px;
+                    text-align:center;margin:24px 0;">
+            <span style="font-size:36px;font-weight:900;
+                         letter-spacing:12px;color:#4d8eff;">
+                {otp}
+            </span>
+        </div>
+        <p style="color:#8c909f;">This code expires in 10 minutes.</p>
+    </div>
+    """, subtype="html")
+
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        print("SMTP: Email sent successfully!")
+        return True
+    except Exception as e:
+        print(f"SMTP exception: {type(e).__name__}: {str(e)}")
+        return False
+
 def send_otp_email(email, otp, full_name):
     api_key = os.environ.get('SENDGRID_API_KEY', '')
     from_email = (
@@ -196,8 +243,8 @@ def send_otp_email(email, otp, full_name):
     print(f"SendGrid FROM email: {from_email}")
     
     if not api_key:
-        print("ERROR: No SendGrid API key found")
-        return False
+        print("ERROR: No SendGrid API key found, trying SMTP fallback")
+        return _send_otp_email_smtp(email, otp, full_name)
 
     try:
         sg = sendgrid.SendGridAPIClient(api_key=api_key)
@@ -236,11 +283,13 @@ def send_otp_email(email, otp, full_name):
             return True
         else:
             print(f"SendGrid failed with status: {response.status_code}")
-            return False
+            print("Trying SMTP fallback...")
+            return _send_otp_email_smtp(email, otp, full_name)
             
     except Exception as e:
         print(f"SendGrid exception: {type(e).__name__}: {str(e)}")
-        return False
+        print("Trying SMTP fallback...")
+        return _send_otp_email_smtp(email, otp, full_name)
 
 def validate_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -314,7 +363,15 @@ rubric_text = ""
 # ✅ Groq LLM - no daily limit issues
 # ✅ Safe initialization - won't crash if key is missing
 
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY') or os.getenv('GROQ_API_KEY')
+def _clean_env_value(v):
+    if v is None:
+        return None
+    v = str(v).strip()
+    if len(v) >= 2 and ((v[0] == v[-1] == '"') or (v[0] == v[-1] == "'")):
+        v = v[1:-1].strip()
+    return v
+
+GROQ_API_KEY = _clean_env_value(os.environ.get('GROQ_API_KEY') or os.getenv('GROQ_API_KEY'))
 
 if GROQ_API_KEY:
     llm = ChatGroq(
@@ -325,6 +382,15 @@ if GROQ_API_KEY:
 else:
     llm = None
     print("WARNING: GROQ_API_KEY not set")
+
+def _friendly_ai_error(e: Exception) -> str:
+    msg = str(e) if e else "Unknown error"
+    low = msg.lower()
+    if "401" in low and ("invalid api key" in low or "api key" in low):
+        return "AI is not configured: GROQ_API_KEY is invalid. Please update it and restart the server."
+    if "groq_api_key" in low and "not set" in low:
+        return "AI is not configured: GROQ_API_KEY is missing. Please set it and restart the server."
+    return f"AI error: {msg}"
 
 # =====================
 # HELPER FUNCTIONS
@@ -423,8 +489,14 @@ DOCUMENT CONTENT:
 Current question: {question}""")
     ]
 
-    response = llm.invoke(messages)
-    return response.content
+    if llm is None:
+        return "AI is not configured: GROQ_API_KEY is missing or invalid. Please set it and restart the server."
+
+    try:
+        response = llm.invoke(messages)
+        return response.content
+    except Exception as e:
+        return _friendly_ai_error(e)
 
 
 def extract_text_from_file(file):
@@ -504,6 +576,8 @@ def get_external_resources(topic):
         """),
         HumanMessage(content=f"Find 3 verified educational resources about: {topic}")
     ]
+    if llm is None:
+        return None
     try:
         response = llm.invoke(messages)
         return markdown.markdown(response.content)
@@ -518,6 +592,8 @@ def get_followup_questions(question, answer):
         """),
         HumanMessage(content=f"Question: {question}\nAnswer: {answer}")
     ]
+    if llm is None:
+        return []
     try:
         response = llm.invoke(messages)
         questions = [q.strip() for q in response.content.strip().split('\n') if q.strip()]
@@ -526,6 +602,8 @@ def get_followup_questions(question, answer):
         return []
 
 def _grade_essay(essay):
+    if llm is None:
+        return "<p style='color:red;'>⚠ AI is not configured: GROQ_API_KEY is missing or invalid.</p>"
     import re
     essay = re.sub(r'\(cid:\d+\)', '', essay).strip()
     essay = essay[:3000] if len(essay) > 3000 else essay
@@ -570,7 +648,7 @@ def _grade_essay(essay):
         response = llm.invoke(messages)
         return markdown.markdown(response.content)
     except Exception as e:
-        return f"<p style='color:red;'>⚠ Error: {str(e)}</p>"
+        return f"<p style='color:red;'>⚠ {_friendly_ai_error(e)}</p>"
 
 @app.route("/delete_essay/<int:essay_id>", methods=["POST"])
 @login_required
@@ -921,6 +999,7 @@ def chat():
 
     # ✅ Get stored plain text instead of vectorstore
     pdf_text = pdf_sessions.get(active, {}).get('text', '')
+    media_text = session.get('media_text', '')
 
     if current_pdf_id:
         chat_history = ChatHistory.query.filter_by(
@@ -930,15 +1009,52 @@ def chat():
 
     if request.method == 'POST':
         user_question = request.form.get('user_question', '').strip()
+        uploaded_media = request.files.get('media_file')
+
+        # Optional media upload: store extracted text into session
+        if uploaded_media and uploaded_media.filename:
+            if not allowed_file(uploaded_media.filename):
+                return chat_render(
+                    chat_history=chat_history,
+                    summary=None,
+                    resources=None,
+                    followups=[],
+                    error="Unsupported media type. Allowed: pdf, jpg, png, txt, docx."
+                )
+
+            extracted = extract_text_from_file(uploaded_media) or ""
+            extracted = extracted.strip()
+            if not extracted:
+                return chat_render(
+                    chat_history=chat_history,
+                    summary=None,
+                    resources=None,
+                    followups=[],
+                    error="Could not extract text from the uploaded media."
+                )
+
+            # limit size to keep context reasonable
+            session['media_text'] = extracted[:50000]
+            session.modified = True
+            media_text = session['media_text']
 
         if not user_question:
+            # If user only uploaded a file, let them continue without sending a question yet
+            if uploaded_media and uploaded_media.filename:
+                return chat_render(
+                    chat_history=chat_history,
+                    summary=None,
+                    resources=None,
+                    followups=[],
+                    success="Media uploaded. Now ask a question about it."
+                )
             return chat_render(chat_history=[], summary=None,
                                resources=None, followups=[])
 
-        if not pdf_text:
+        if not pdf_text and not media_text:
             return chat_render(chat_history=[], summary=None,
                                resources=None, followups=[],
-                               error="Please upload a PDF first.")
+                               error="Please upload a PDF or attach media first.")
 
         try:
             # ✅ Build history list for context
@@ -948,7 +1064,10 @@ def chat():
             } for msg in chat_history]
 
             # ✅ Use ask_groq instead of conversation_chain
-            ai_answer = ask_groq(user_question, pdf_text, history_list)
+            combined_context = (pdf_text or "")
+            if media_text:
+                combined_context += "\n\nMEDIA CONTENT:\n" + media_text
+            ai_answer = ask_groq(user_question, combined_context, history_list)
 
             # ✅ Save both messages to DB
             if current_pdf_id:
@@ -1056,6 +1175,7 @@ def clear_chat():
             pdf_id=current_pdf_id
         ).delete()
         db.session.commit()
+    session.pop('media_text', None)
     return redirect('/chat')
 
 @app.route('/summarize_chat', methods=['POST'])

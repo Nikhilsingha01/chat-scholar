@@ -264,6 +264,15 @@ function toggleNotif(){
     </div>
     {% endif %}
 
+    {% if success %}
+    <div class="max-w-4xl mx-auto w-full px-4 md:px-8 mt-4">
+        <div class="flex items-center gap-3 bg-tertiary/10 border border-tertiary/20 rounded-xl px-5 py-3">
+            <span class="material-symbols-outlined text-tertiary text-sm">check_circle</span>
+            <p class="text-tertiary text-sm font-medium">{{ success }}</p>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- ✅ Share URL display -->
     {% if share_url %}
     <div class="max-w-4xl mx-auto w-full px-4 md:px-8 mt-4">
@@ -429,7 +438,7 @@ function toggleNotif(){
 
 <!-- ✅ Fixed Bottom Input -->
 <div class="fixed bottom-0 left-0 md:left-[280px] right-0 p-4 md:p-6 bg-gradient-to-t from-surface via-surface/95 to-transparent pointer-events-none z-30">
-    <form action="/chat" method="post" id="chat-form"
+    <form action="/chat" method="post" id="chat-form" enctype="multipart/form-data"
         class="max-w-4xl mx-auto pointer-events-auto">
         <div class="bg-surface-container-highest/80 backdrop-blur-xl border border-outline-variant/20 rounded-full p-2 flex items-center gap-2 shadow-2xl shadow-black/20">
 
@@ -451,7 +460,13 @@ function toggleNotif(){
                 <span id="char-count" class="text-[10px] text-outline hidden">0/500</span>
 
                 <!-- Attach file -->
-                <button type="button" class="p-2 text-outline hover:text-primary transition-colors">
+                <input id="media-file" name="media_file" type="file" class="hidden"
+                  accept=".pdf,.jpg,.jpeg,.png,.txt,.docx" />
+
+                <button type="button"
+                  class="p-2 text-outline hover:text-primary transition-colors"
+                  onclick="document.getElementById('media-file').click()"
+                  title="Attach media (image/pdf/docx/txt)">
                     <span class="material-symbols-outlined">attach_file</span>
                 </button>
 
@@ -526,6 +541,20 @@ document.getElementById('chat-form').addEventListener('submit', () => {
     document.getElementById('typing-indicator').classList.remove('hidden');
     scrollToBottom();
 });
+
+// ✅ Show selected attachment name
+const mediaFile = document.getElementById('media-file');
+if (mediaFile) {
+    mediaFile.addEventListener('change', () => {
+        if (mediaFile.files && mediaFile.files.length > 0) {
+            const name = mediaFile.files[0].name;
+            const input = document.getElementById('user_question');
+            if (input && !input.value) {
+                input.placeholder = `Ask about: ${name}`;
+            }
+        }
+    });
+}
 
 // ✅ Character counter
 function updateCharCount(input) {
