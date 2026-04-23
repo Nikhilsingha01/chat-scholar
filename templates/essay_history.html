@@ -164,36 +164,20 @@ function toggleNotif(){
         <span class="text-slate-600">/</span>
         <span class="text-blue-400 font-bold font-plus-jakarta text-lg">Essay History</span>
     </div>
-    <div class="flex items-center gap-5">
+    <div class="flex items-center gap-3 md:gap-5">
+        <!-- Dark mode toggle -->
         <button onclick="toggleDark()" id="dark-toggle" class="text-slate-400 hover:text-blue-300 transition-opacity">
-            <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
-        </button>
-
-        <!-- ✅ Hamburger button — shows only on mobile -->
-        <button id="hamburger"
-            onclick="toggleSidebar()"
-            class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl
-                bg-surface-container-highest text-on-surface-variant
-                hover:text-primary transition-colors mr-3">
-            <span class="material-symbols-outlined">menu</span>
+            <span class="material-symbols-outlined text-xl md:text-2xl" id="theme-icon">dark_mode</span>
         </button>
         
         <div class="relative">
-
-        <button onclick="toggleNotif()"
-        class="relative text-slate-400 hover:text-blue-300">
-
-            <span class="material-symbols-outlined text-2xl">
-                notifications
-            </span>
-
-            {% if unread_count > 0 %}
-            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full">
-                {{ unread_count }}
-            </span>
-            {% endif %}
-
-        </button>
+            <button onclick="toggleNotif()"
+            class="relative text-slate-400 hover:text-blue-300">
+                <span class="material-symbols-outlined text-xl md:text-2xl">notifications</span>
+                {% if unread_count > 0 %}
+                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full">{{ unread_count }}</span>
+                {% endif %}
+            </button>
 
         <!-- Dropdown -->
         <div id="notifBox"
@@ -228,13 +212,23 @@ function toggleNotif(){
         </div>
 
         </div>
+        
+        <!-- User Avatar -->
         {% if current_user.is_authenticated %}
         <a href="{{ url_for('profile') }}">
             <img
             src="{{ url_for('static', filename='uploads/' + (current_user.profile_image or 'default.png')) }}"
-            class="w-10 h-10 rounded-full object-cover border-2 border-blue-400 hover:scale-105 transition cursor-pointer">
+            class="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-blue-400 hover:scale-105 transition cursor-pointer">
         </a>
         {% endif %}
+
+        <!-- ✅ Hamburger button — shows only on mobile -->
+        <button id="hamburger"
+            onclick="toggleSidebar()"
+            class="md:hidden inline-flex items-center justify-center w-8 h-8 rounded-xl bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-xl">menu</span>
+        </button>
+
     </div>
 </header>
 
@@ -443,14 +437,23 @@ function toggleNotif(){
 // ✅ Dark mode
 const html = document.getElementById('html-root');
 const themeIcon = document.getElementById('theme-icon');
-if (localStorage.getItem('darkMode') === 'false') {
+if (localStorage.getItem("theme") === "light") {
     html.classList.remove('dark');
     if (themeIcon) themeIcon.textContent = 'light_mode';
+} else {
+    html.classList.add('dark');
+    if (themeIcon) themeIcon.textContent = 'dark_mode';
 }
 function toggleDark() {
-    const isDark = html.classList.toggle('dark');
-    localStorage.setItem('darkMode', isDark);
-    if (themeIcon) themeIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
+    if(html.classList.contains("dark")){
+        html.classList.remove("dark");
+        localStorage.setItem("theme","light");
+        if(themeIcon) themeIcon.textContent="light_mode";
+    }else{
+        html.classList.add("dark");
+        localStorage.setItem("theme","dark");
+        if(themeIcon) themeIcon.textContent="dark_mode";
+    }
 }
 
 // ✅ Mobile sidebar toggle (shared)

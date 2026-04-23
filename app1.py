@@ -1369,6 +1369,23 @@ class SharedChat(db.Model):
 from flask import request, redirect, url_for, flash
 from flask_login import login_required, current_user
 
+@app.route('/share_chat/<int:pdf_id>', methods=['GET'])
+@login_required
+def share_chat_get(pdf_id):
+    pdf = PDFHistory.query.filter_by(id=pdf_id, user_id=current_user.id).first_or_404()
+    existing = SharedChat.query.filter_by(user_id=current_user.id, pdf_id=pdf.id).first()
+    
+    if existing:
+        share_id = existing.share_id
+    else:
+        import uuid
+        share_id = str(uuid.uuid4())
+        shared = SharedChat(share_id=share_id, user_id=current_user.id, pdf_id=pdf.id)
+        db.session.add(shared)
+        db.session.commit()
+
+    return redirect(url_for('view_shared_chat', share_id=share_id))
+
 @app.route('/share_chat', methods=['POST'])
 @login_required
 def share_chat():
@@ -1391,7 +1408,7 @@ def share_chat():
     ).first()
 
     if existing:
-        share_url = f"http://127.0.0.1:5000/shared/{existing.share_id}"
+        share_url = request.host_url + "shared/" + existing.share_id
     else:
         import uuid
         share_id = str(uuid.uuid4())
