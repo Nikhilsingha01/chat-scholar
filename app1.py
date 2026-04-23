@@ -229,67 +229,95 @@ def _send_otp_email_smtp(email, otp, full_name):
 
 def send_otp_email(email, otp, full_name):
     api_key = os.environ.get('SENDGRID_API_KEY', '')
-    from_email = (
-        os.environ.get('SENDGRID_FROM_EMAIL', '').strip()
-        or os.environ.get('MAIL_FROM', '').strip()
-        or os.environ.get('FROM_EMAIL', '').strip()
-        or os.environ.get('MAIL_USERNAME', '').strip()
-        or 'no-reply@chatscholar.ai'
-    )
-    
+
     print(f"Attempting to send OTP to: {email}")
     print(f"SendGrid API key exists: {bool(api_key)}")
-    print(f"API key starts with SG.: {api_key.startswith('SG.')}")
-    print(f"SendGrid FROM email: {from_email}")
-    
+
     if not api_key:
-        print("ERROR: No SendGrid API key found, trying SMTP fallback")
-        return _send_otp_email_smtp(email, otp, full_name)
+        print("ERROR: No SendGrid API key found")
+        return False
 
     try:
         sg = sendgrid.SendGridAPIClient(api_key=api_key)
         message = SGMail(
-            from_email=from_email,
+            # ✅ Use tuple format with sender name
+            from_email=('Chat Scholar', 'nikhilsinghal2023@gmail.com'),
             to_emails=email,
-            subject='Chat Scholar - Email Verification',
-            html_content=f"""
-            <div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;
-                        background:#031427;color:#d3e4fe;padding:40px;border-radius:16px;">
-                <h2 style="color:#adc6ff;">Chat Scholar</h2>
-                <p>Hello <strong>{full_name}</strong>!</p>
-                <p>Your verification code is:</p>
-                <div style="background:#1b2b3f;padding:24px;border-radius:12px;
-                            text-align:center;margin:24px 0;">
-                    <span style="font-size:36px;font-weight:900;
-                                 letter-spacing:12px;color:#4d8eff;">
-                        {otp}
-                    </span>
+            # ✅ Simple subject — avoid spam trigger words
+            subject=f'{otp} is your Chat Scholar verification code',
+            html_content=f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/></head>
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,sans-serif;">
+    <div style="max-width:480px;margin:40px auto;background:#ffffff;
+                border-radius:12px;overflow:hidden;
+                box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+
+        <!-- Header -->
+        <div style="background:#031427;padding:32px;text-align:center;">
+            <h1 style="color:#adc6ff;margin:0;font-size:24px;">Chat Scholar</h1>
+            <p style="color:#8c909f;margin:8px 0 0;font-size:14px;">
+                AI Educational Platform
+            </p>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:40px 32px;">
+            <p style="color:#1e293b;font-size:16px;margin:0 0 8px;">
+                Hello <strong>{full_name}</strong>,
+            </p>
+            <p style="color:#475569;font-size:15px;margin:0 0 32px;">
+                Use the code below to verify your email address.
+                This code expires in <strong>10 minutes</strong>.
+            </p>
+
+            <!-- OTP Box -->
+            <div style="background:#031427;border-radius:12px;
+                        padding:24px;text-align:center;margin:0 0 32px;">
+                <p style="color:#8c909f;font-size:12px;
+                           text-transform:uppercase;letter-spacing:2px;
+                           margin:0 0 12px;">
+                    Verification Code
+                </p>
+                <div style="color:#adc6ff;font-size:42px;font-weight:900;
+                             letter-spacing:16px;font-family:monospace;">
+                    {otp}
                 </div>
-                <p style="color:#8c909f;">This code expires in 10 minutes.</p>
             </div>
-            """
+
+            <p style="color:#94a3b8;font-size:13px;margin:0;">
+                If you did not request this code, you can safely ignore this email.
+                Your account will not be affected.
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background:#f8fafc;padding:24px 32px;
+                    border-top:1px solid #e2e8f0;text-align:center;">
+            <p style="color:#94a3b8;font-size:12px;margin:0;">
+                © 2025 Chat Scholar · Made by Nikhil Singhal
+            </p>
+            <p style="color:#94a3b8;font-size:11px;margin:8px 0 0;">
+                This is an automated message. Please do not reply.
+            </p>
+        </div>
+    </div>
+</body>
+</html>"""
         )
         response = sg.send(message)
         print(f"SendGrid response status: {response.status_code}")
-        try:
-            body = response.body.decode("utf-8") if hasattr(response.body, "decode") else str(response.body)
-            if body and body.strip():
-                print(f"SendGrid response body: {body[:2000]}")
-        except Exception:
-            pass
-        
+
         if response.status_code in [200, 201, 202]:
             print("Email sent successfully!")
             return True
         else:
-            print(f"SendGrid failed with status: {response.status_code}")
-            print("Trying SMTP fallback...")
-            return _send_otp_email_smtp(email, otp, full_name)
-            
+            print(f"SendGrid failed: {response.status_code}")
+            return False
+
     except Exception as e:
         print(f"SendGrid exception: {type(e).__name__}: {str(e)}")
-        print("Trying SMTP fallback...")
-        return _send_otp_email_smtp(email, otp, full_name)
+        return False
 
 def validate_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
