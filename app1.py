@@ -43,6 +43,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL', 'sqlite:///chatscholar.db'
 ).replace('postgres://', 'postgresql://')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+}
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -240,8 +244,8 @@ def send_otp_email(email, otp, full_name):
     try:
         sg = sendgrid.SendGridAPIClient(api_key=api_key)
         message = SGMail(
-            # ✅ Use tuple format with sender name
-            from_email=('Chat Scholar', 'nikhilsinghal2023@gmail.com'),
+            # ✅ Use tuple format with sender name (email, name)
+            from_email=('nikhilsinghal2023@gmail.com', 'Chat Scholar'),
             to_emails=email,
             # ✅ Simple subject — avoid spam trigger words
             subject=f'{otp} is your Chat Scholar verification code',
