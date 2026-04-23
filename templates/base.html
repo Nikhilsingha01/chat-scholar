@@ -185,17 +185,17 @@ font-weight:700;
             </div>
 
             <!-- Right -->
-            <div class="flex items-center gap-5">
+            <div class="flex items-center gap-3 md:gap-5">
 
                 <!-- Dark Mode -->
                 <button onclick="toggleDark()"
                 class="text-slate-400 hover:text-blue-300 transition">
-                    <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+                    <span class="material-symbols-outlined text-xl md:text-2xl" id="theme-icon">dark_mode</span>
                 </button>
 
                 <!-- Notifications -->
                 <button class="relative text-slate-400 hover:text-blue-300 transition">
-                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="material-symbols-outlined text-xl md:text-2xl">notifications</span>
                     <span class="absolute top-0 right-0 w-2 h-2 bg-blue-400 rounded-full"></span>
                 </button>
 
@@ -203,7 +203,7 @@ font-weight:700;
                 <a href="{{ url_for('profile') }}">
                     <img
                     src="{{ url_for('static', filename='uploads/' + (current_user.profile_image or 'default.png')) }}"
-                    class="w-10 h-10 rounded-full object-cover border border-blue-400 hover:scale-105 transition">
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border border-blue-400 hover:scale-105 transition">
                 </a>
                 {% endif %}
 

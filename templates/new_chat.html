@@ -192,25 +192,25 @@ function toggleNotif(){
 
     <div class="flex items-center gap-2 md:gap-3">
         <!-- Share -->
-        <form action="/share_chat" method="post" class="inline">
+        <form action="/share_chat" method="post" class="hidden md:inline">
             <button type="submit"
                 class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full border border-outline-variant/20 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all text-sm font-medium">
                 <span class="material-symbols-outlined text-sm">share</span>
-                <span class="hidden sm:inline">Share</span>
+                <span class="hidden lg:inline">Share</span>
             </button>
         </form>
         <!-- Export -->
         <button onclick="exportChat()"
-            class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full border border-outline-variant/20 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all text-sm font-medium">
+            class="hidden md:flex items-center gap-2 px-3 md:px-4 py-2 rounded-full border border-outline-variant/20 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all text-sm font-medium">
             <span class="material-symbols-outlined text-sm">download</span>
-            <span class="hidden sm:inline">Export</span>
+            <span class="hidden lg:inline">Export</span>
         </button>
         <!-- Summarize -->
-        <form action="/summarize_chat" method="post" class="inline">
+        <form action="/summarize_chat" method="post" class="hidden md:inline">
             <button type="submit"
                 class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-primary-gradient text-on-primary-container font-bold text-sm hover:opacity-90 transition-all">
                 <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">summarize</span>
-                <span class="hidden sm:inline">Summarize</span>
+                <span class="hidden lg:inline">Summarize</span>
             </button>
         </form>
         <!-- Dark mode -->
@@ -459,16 +459,7 @@ function toggleNotif(){
                 <!-- Char count -->
                 <span id="char-count" class="text-[10px] text-outline hidden">0/500</span>
 
-                <!-- Attach file -->
-                <input id="media-file" name="media_file" type="file" class="hidden"
-                  accept=".pdf,.jpg,.jpeg,.png,.txt,.docx" />
-
-                <button type="button"
-                  class="p-2 text-outline hover:text-primary transition-colors"
-                  onclick="document.getElementById('media-file').click()"
-                  title="Attach media (image/pdf/docx/txt)">
-                    <span class="material-symbols-outlined">attach_file</span>
-                </button>
+                <!-- Attach file removed to prevent conflicting uploads -->
 
                 <!-- Send button -->
                 <button type="submit"

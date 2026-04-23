@@ -244,7 +244,7 @@ function toggleNotif(){
             {% set msg_count = pdf.chats | length %}
             {% set has_chats = msg_count > 0 %}
 
-            <div class="doc-card group relative flex items-center justify-between p-5 bg-surface-container-low rounded-lg transition-all hover:bg-surface-container-high hover:-translate-y-0.5 duration-300 border border-outline-variant/5"
+            <div class="doc-card group relative flex flex-col md:flex-row md:items-center justify-between items-start gap-4 md:gap-0 p-5 bg-surface-container-low rounded-lg transition-all hover:bg-surface-container-high hover:-translate-y-0.5 duration-300 border border-outline-variant/5"
                 data-filename="{{ pdf.filename | lower }}">
 
                 <!-- Left: Icon + Info -->
@@ -280,7 +280,7 @@ function toggleNotif(){
                 </div>
 
                 <!-- Right: Message count + Actions -->
-                <div class="flex items-center gap-8">
+                <div class="flex items-center justify-between w-full md:w-auto md:justify-end gap-4 md:gap-8">
                     <div class="flex flex-col items-end">
                         <div class="flex items-center gap-1.5 {% if has_chats %}text-tertiary{% else %}text-on-surface-variant{% endif %}">
                             <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
