@@ -249,6 +249,7 @@ def send_otp_email(email, otp, full_name):
             to_emails=email,
             # ✅ Simple subject — avoid spam trigger words
             subject=f'{otp} is your Chat Scholar verification code',
+            plain_text_content=f"Hello {full_name},\n\nYour Chat Scholar verification code is: {otp}\n\nThis code expires in 10 minutes.\n\nIf you did not request this, please ignore this email.",
             html_content=f"""<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"/></head>
